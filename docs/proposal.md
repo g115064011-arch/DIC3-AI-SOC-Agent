@@ -8,19 +8,34 @@
 
 ## 1. Abstract
 
-**【A. Attention Getter】** 資安攻擊的規模與代價持續攀升。依國安局報告，2025 年中共對我國關鍵基礎設施的網路侵擾平均每日約 263 萬次，較 2024 年增加 6% [23]；IBM 2026 年報告指出，資料外洩的全球平均成本創新高，達 499 萬美元（較前一年增加 12%），從發生到偵測、圍堵平均需要 247 天 [14]。站在第一線的資安維運中心（SOC）每天面對數以萬計的告警，其中只有一小部分對應真實攻擊 [2]。
+**[A. Attention Getter]** Modern Security Operations Centers (SOCs) are overwhelmed by tens of thousands of alerts daily, of which only a small fraction represent actual malicious intrusions. Global breach metrics highlight this acute operational pressure: the IBM Cost of a Data Breach Report 2026 reveals an all-time high average breach cost of $4.99 million (+12% year-over-year) and an average lifecycle of 247 days from breach to containment, while Mandiant M-Trends 2026 reports a global median attacker dwell time of 14 days (surging to 122 days in cyber espionage incidents). Concurrently, national telemetry, such as Taiwan National Security Bureau's 2026 disclosure of 2.63 million daily cyber probes targeting critical infrastructure (+6% from 2024), underscores the relentless barrage of external threats. In this high-stakes environment, rapid and reliable triage is the critical bottleneck in preventing severe damages.
 
-**【B. But】** 大量誤報與良性觸發造成告警疲勞，讓分析師可能漏看真正的威脅 [8][24]。現有解法各有限制：ML 分級模型可大規模部署 [1][7]，但較少說明告警在攻擊鏈中的意義；LLM Agent 能調查與解釋，但近期研究發現，五種主流 LLM 推理策略都漏判至少 40.4% 的攻擊告警 [3]，在資安調查 benchmark 上最佳模型也只達到 0.606 的 reward [4]。此外，自動化程度提高會讓分析師降低監控、更依賴自動化結果 [12]。
+**[B. But]** Massive volumes of false positives and benign triggers lead to pervasive analyst alert fatigue, creating substantial risks of overlooking genuine intrusions. Existing automated triage solutions suffer from critical shortcomings: standalone Machine Learning (ML) classifiers scale well across enterprise telemetry but lack Kill Chain semantic context; conversely, recent empirical evaluations demonstrate that five mainstream tool-using LLM agent strategies suffer from a false negative rate of at least 40.4% on attack-related alerts, primarily due to premature termination when queries yield empty results. Furthermore, on the ExCyTIn-Bench benchmark, state-of-the-art LLMs achieve an investigation reward of only 0.606. Moreover, increased opaque automation induces automation complacency among analysts, diminishing human vigilance.
 
-**【C. Cure】** 為了解決上述問題，本專題提出一個結合 ML 分級、MITRE ATT&CK 領域知識與 LLM 推理的 **AI SOC Analyst Agent**，對資安事件提供有證據、可解釋，並且「知道何時該交給人」的分級與處置建議。
+**[C. Cure]** To overcome these foundational limitations, we propose the **AI SOC Analyst Agent**—a domain-specific AI system that orchestrates Machine Learning classification, MITRE ATT&CK contextual reasoning, and LLM agentic planning. The system provides evidence-grounded, explainable triage for security incidents across True Positive (TP), Benign Positive (BP), and False Positive (FP) categories, equipped with a rigorous human-in-the-loop escalation policy that knows precisely when an incident must be handed over to human analysts.
 
-**【D. Development】** 系統以 LLM 作為規劃與推理核心，透過工具取得事件證據；以 Gradient Boosted Trees 預測事件為真陽性（TP）、良性陽性（BP）或誤報（FP）的機率，並用 SHAP 解釋；以向量資料庫檢索 ATT&CK 技術知識與 NIST SP 800-61 Rev. 3 處置流程；最後由證據融合模組整合 ML、LLM 與攻擊鏈規則的結論。當信心不足、結論衝突、證據不足或攻擊推進到後段階段時，系統會主動升級給人工複核。
+**[D. Development]** The agent employs an eight-module architecture. A Gradient Boosted Decision Tree (GBDT) model, trained on analyst-labeled enterprise telemetry, computes calibrated incident probabilities (TP/BP/FP) accompanied by TreeSHAP local feature explanations. Simultaneously, a vector database retrieves formal MITRE ATT&CK techniques and NIST SP 800-61 Rev. 3 incident handling playbooks. An LLM planner conducts multi-step evidence gathering and hypothesis verification via structured SQL log query tools. Finally, an evidence fusion engine reconciles ML predictions, ATT&CK tactical kill-chain rules, and LLM reasoning. Grounded in the "Assume Breach" and "Asymmetric Error Cost" doctrines, the system systematically escalates incidents to human analysts whenever prediction confidence falls below threshold $\tau$, conclusions conflict, investigative evidence is insufficient, or late-stage tactics (e.g., Exfiltration) are detected.
 
-**【E. Experiments】** 本專題以 Microsoft GUIDE（約 100 萬起真實事件，標籤由資安分析師標註）評估分級表現，並以 ExCyTIn-Bench 評估 Agent 查詢 log 進行調查的能力。比較對象包括多數類別、Detector 歷史誤報率規則、純 GBDT 及純 LLM；指標包括 Macro-F1、TP 漏判率、人工升級率、ATT&CK 對應準確率、報告品質與成本，並以消融實驗檢驗各模組的貢獻。
+**[E. Experiments]** We evaluate the proposed system on two benchmark suites: Microsoft GUIDE (encompassing ~1 million real-world enterprise incidents across 6,100 customer organizations) for triage accuracy, and ExCyTIn-Bench (57 log tables, 8 authentic attack chains) for agentic multi-hop log investigation. Baselines include majority-class heuristic, detector-level historical false positive rules, standalone GBDT, and standalone LLM without knowledge retrieval. Primary evaluation metrics comprise Macro-F1, TP False Negative Rate (FNR), Human Escalation Rate, ATT&CK mapping accuracy, report qualitative scoring, and execution cost (token usage and latency). Ablation studies isolate the quantitative contributions of knowledge retrieval, ML probability priors, and escalation logic.
 
-**【F. Expected Outcomes】** 本專題尚未進行實驗。我們預期：（1）整合領域知識與升級機制後，TP 漏判率將低於純 GBDT 與純 LLM baseline；（2）漏判率與升級率之間的取捨可被量化呈現，作為實務設定門檻的依據；（3）ATT&CK 知識檢索可提升攻擊技術對應的正確性與報告的可解釋性。實際結果將於期末報告中呈現。
+**[F. Expected Outcomes]** As this project is currently in the proposal phase, empirical evaluations are pending. We hypothesize: (1) integrating domain knowledge constraints and calibrated escalation rules will significantly reduce TP False Negative Rates compared to standalone ML and LLM baselines; (2) the operational trade-off curve between Miss Rate and Human Escalation Rate can be quantitatively mapped to provide actionable tuning for tiered SOC teams; and (3) structured ATT&CK retrieval will demonstrably improve tactic mapping precision and report verifiability for Tier-1 analysts. All empirical validations will be executed and documented in the final capstone deliverable.
 
-**關鍵字**：Security Operations Center、Alert Triage、LLM Agent、MITRE ATT&CK、Retrieval-Augmented Generation、Human-in-the-loop
+**Keywords**: Security Operations Center (SOC), Alert Triage, LLM Agent, MITRE ATT&CK, Explainable AI (SHAP), Human-in-the-Loop, Spec-Driven Development.
+
+### 繁體中文重點說明
+
+1. **研究動機（Attention Getter）**：
+   - 引用 2026 最新官方與產業實證數據：IBM 2026 報告全球資料外洩成本創 499 萬美元新高、偵測至圍堵週期長達 247 天；Mandiant M-Trends 2026 指出攻擊者潛伏期中位數為 14 天（間諜攻擊達 122 天）；國安局 2026 數據顯示關鍵基礎設施每日面臨 263 萬次侵擾。強調第一線 SOC 告警分級是圍堵災情最嚴峻的瓶頸。
+2. **現有方法瓶頸與 Research Gap（But）**：
+   - 告警疲勞源於誤報與良性觸發（BP）；純 ML 缺少攻擊鏈脈絡；LLM Agent 在查無紀錄時易誤判提前結案，主流策略漏判率高達 40.4% [3]，在 ExCyTIn-Bench 基準評測僅得 0.606 reward [4]；過度自動化更造成分析師自滿偏誤（Automation Complacency）[12]。
+3. **解決方案（Cure）**：
+   - 提出結合 ML 分級、MITRE ATT&CK 知識圖譜與 LLM 推理的 **AI SOC Analyst Agent**，提供具備證據鏈、可解釋性，且「知所進退（明確升級給人類）」的智慧代理人。
+4. **系統方法論（Development）**：
+   - 以系統架構 ①–⑧ 為基礎：GBDT 預測 TP/BP/FP 機率並搭配 TreeSHAP 解釋；向量知識庫檢索 ATT&CK 與 NIST 應變指引；LLM 執行 Log 證據收集；證據融合模組於低信心、衝突、證據不足或晚期戰術時觸發升級機制。
+5. **實驗設計（Experiments）**：
+   - 使用 Microsoft GUIDE（100 萬起事件、6.1k 組織）與 ExCyTIn-Bench（57 張 Log 表、8 條攻擊鏈）。評估指標包含 Macro-F1、TP 漏判率、升級率、ATT&CK 對應準確率與 Token 成本，並進行消融實驗。
+6. **預期成果（Expected Outcomes）**：
+   - 遵守真實性原則，標明為預期成果：預期漏判率顯著低於純 GBDT 與純 LLM；能繪出「漏判率 vs. 升級率」取捨曲線；提升報告可驗證性與可解釋性。
 
 ## 2. Introduction
 
@@ -154,114 +169,135 @@ SOC 每天面對數以萬計的告警，其中只有一小部分對應真實攻�
 
 ## 4. Deep Research
 
-> 本節回答作業要求的三個問題：Q1 SOC 專家普遍認同的五個核心思維模式；Q2 三個最重要的專業爭論；Q3 用來分辨「真正理解」和「死記硬背」的十個問題。
-> 每個思維模式和爭論都對應到本專題的具體設計決策。
+> 本節落實作業規範之三大核心問題：Q1 五個核心思維模式（附對應模組 ①–⑧）；Q2 三大專業爭論（View A ↔ View B → Evidence → Consensus → Unresolved Problems → Our Design Decision）；Q3 十個深度理解問題（涵蓋各推理層次之深入解析）。
 
-### Q1. 五個核心思維模式
+### Q1. 五個核心思維模式（Five Core Mindsets）
 
-#### M1. Assume Breach：假設已遭入侵
+#### M1. Assume Breach：假設環境已遭入侵
 
-- **意義**：不要預設環境是乾淨的。「查不到可疑紀錄」不等於「沒有攻擊」，也可能是攻擊者刪了 log、或是查詢範圍不夠。
-- **證據**：
-  - M-Trends 2026 [15]：2025 年攻擊者在環境中的全球潛伏時間中位數為 **14 天**（前一年 11 天）；網路間諜與北韓 IT 人員案件更長達 **122 天**。
-  - NIST Zero Trust Architecture [21] 的基本假設是：企業網路內的資產應「隨時假設攻擊者已存在於網路中」，不因位於內部而被信任。
-  - [3] 的實驗發現：LLM Agent **在查詢沒有回傳紀錄時，最容易把攻擊告警誤判為無害並結案**。
-- **對系統設計的影響**：Agent 遇到「查無紀錄」時不可直接判為 BP / FP，而是擴大查詢範圍（相關主機、帳號、時間窗）；用完工具呼叫預算仍無法確認，就升級給人工（Flowchart 的「資料足夠？」迴圈；Algorithm 1 第 05–09、18 行）。
+- **定義**：不預設內部網路或端點環境處於無毒狀態；隨時假設攻擊者已成功繞過周邊防護並潛伏於受害環境中。
+- **為什麼重要**：攻擊者潛伏時間長，且具備規避防護的能力。「Log 查無紀錄」不等於「沒有攻擊」，極可能是日誌遭竄改、監控盲點或進階規避行為。
+- **證據與來源**：
+  - Mandiant M-Trends 2026 [15]：2025 年攻擊者在環境中的全球潛伏時間中位數為 **14 天**（前一年 11 天）；網路間諜與進階威脅更長達 **122 天**。
+  - NIST SP 800-207 Zero Trust Architecture [21]：核心原則為企業網路內之資產應「隨時假設攻擊者已存在於網路中」，不因位於內部而被信任。
+  - Tsegai 等人 (2026) [3]：實證發現主流 LLM Agent **在查詢沒有回傳紀錄時，最容易把真實攻擊告警誤判為良性（BP/FP）並提前結案（漏判率 $\ge 40.4\%$）**。
+- **如何影響系統設計**：
+  - Agent 遇到「查無紀錄」時嚴禁直接判為 BP/FP，而是依 Assume Breach 原則自動擴大查詢範圍（相關主機、帳號、時間窗）。
+  - 用完工具呼叫預算仍無法確認時，將「證據不足」視為潛在威脅徵候，主動升級給人工複核（Flowchart 證據迴圈；Algorithm 1 第 05–09、18 行）。
+- **對應模組**：**③ Planner & Reasoning Agent**、**④ Data Acquisition / Retrieval**、**⑦ Decision & Escalation**。
 
-#### M2. 看事件與攻擊鏈脈絡，而非單一告警
+#### M2. 看事件與攻擊鏈脈絡，而非單一告警（Attack Chain Context）
 
-- **意義**：單一告警本身的意義有限。同樣是「執行 PowerShell」，單獨出現可能是管理員作業；如果接在可疑登入之後、又接著大量外傳資料，就是攻擊鏈的一部分。
-- **證據**：
-  - [10] 把告警序列對應到 Kill Chain 攻擊圖，以攻擊推進到的最遠階段判定嚴重度，分類 AUC 達 0.95。
-  - [11] ROSCA 以 ATT&CK Kill Chain 聚合告警，排序準確度優於 MATE 框架。
-  - GUIDE [1] 的分級標籤本身就是標在**事件（incident）層級**，而不是單一告警。
-- **對系統設計的影響**：分析單位是「事件」而非「告警」（Evidence → Alert → Incident 三層聚合）；特徵包含 ATT&CK Tactic 覆蓋數與攻擊鏈階段；攻擊推進到後段（例如 Exfiltration）時觸發高風險規則。
+- **定義**：告警不可孤立看待；資安威脅是由一連串具備前後因果關聯與戰術目標的步驟所組成。
+- **為什麼重要**：單一告警本身意義有限。同樣是「執行 PowerShell」，單獨出現可能是管理員作業；若接在異地登入之後、又伴隨大量外傳資料，即構成完整攻擊鏈。
+- **證據與來源**：
+  - Sadlek 等人 [10]：把告警序列對應到 Kill Chain 攻擊圖，以攻擊推進到的最遠階段判定嚴重度，分類 AUC 達 0.95。
+  - ROSCA [11]：以 ATT&CK Kill Chain 聚合告警並排序，在真實醫院 SOC 表現優於 MATE 框架。
+  - Microsoft GUIDE [1]：分級標籤是以**事件（Incident）層級**標註，而非孤立告警。
+- **如何影響系統設計**：
+  - 分析單位為「事件」而非單一告警（實施 Evidence → Alert → Incident 三層聚合）。
+  - 特徵工程明確納入 ATT&CK Tactic 覆蓋數與攻擊鏈階段。
+  - 決策引擎內建高風險阻斷規則：攻擊推進到後段（例如 Exfiltration、Impact）時強制觸發升級。
+- **對應模組**：**② Query / Input**、**⑤ Analytics Engine**、**⑥ Domain Knowledge Integration**、**⑦ Decision & Escalation**。
 
-#### M3. 錯誤成本不對稱：漏判比誤報昂貴，但誤報也有代價
+#### M3. 錯誤成本不對稱：漏判比誤報昂貴，但誤報也有代價（Asymmetric Error Cost）
 
-- **意義**：漏掉一個真實攻擊（False Negative）的代價遠高於多看一個誤報；但誤報太多會造成告警疲勞，反過來讓分析師漏看真正的攻擊。兩者都要管理，不能只看準確率。
-- **證據**：
-  - IBM 2026 [14]：資料外洩的全球平均成本為 **499 萬美元**，從發生到偵測、圍堵的平均週期為 **247 天**；大量使用 AI 與自動化的組織平均節省 **193 萬美元**、週期縮短 **65 天**。
-  - [8] 指出告警疲勞是 SOC 的結構性問題；[3] 顯示降低漏判（40.4% → 3.1%）需要付出 18.4% 升級率的代價。
-- **對系統設計的影響**：TP 漏判率是首要指標（NFR2）；Algorithm 2 第 06–08 行在高風險情境下偏向升級；實驗同時報告「漏判率」與「升級率」，明確呈現取捨。
+- **定義**：資安維運面臨非對稱損失矩陣——漏掉真實攻擊（False Negative）的代價遠高於多看一起誤報；然而誤報過多又會造成告警疲勞，反向導致漏判。
+- **為什麼重要**：單純追求最高準確率（Accuracy）會使模型傾向預測為多數類別的良性活動，導致嚴重的真實攻擊漏判。
+- **證據與來源**：
+  - IBM 2026 [14]：資料外洩的全球平均成本達 **499 萬美元**，平均處理週期為 **247 天**；廣泛應用 AI 與自動化的組織平均節省 **193 萬美元**、週期縮短 **65 天**。
+  - Ndichu 等人 [8]：系統性回顧指出告警疲勞是 SOC 的結構性問題。
+  - Tsegai 等人 [3]：AIDA 將漏判率壓低至 3.1% 的同時，必須承受 18.4% 的升級率代價。
+- **如何影響系統設計**：
+  - 將 **TP 漏判率（False Negative Rate）** 定位為最核心品質指標（NFR2）。
+  - 分級模型導入非對稱損失加權；在 Algorithm 2 設定保守的信心門檻 $\tau$。
+  - 評估實驗同時報告「漏判率」與「升級率」取捨曲線，提供可調校的實務依據。
+- **對應模組**：**⑤ Analytics Engine**、**⑦ Decision & Escalation**。
 
 #### M4. 看攻擊行為（TTPs），而非容易替換的指標（IOCs）
 
-- **意義**：IP、網域、檔案 hash 這類指標，攻擊者很容易更換；攻擊手法（Tactics, Techniques, Procedures）則難以改變。這是 Pyramid of Pain [20] 的核心概念，也是 MITRE ATT&CK [22] 以「攻擊者行為」為單位建構知識庫的原因。
-- **證據**：
-  - Pyramid of Pain [20]：越往上層（TTPs）偵測，攻擊者要付出的代價越高。
-  - M-Trends 2026 [15]：初始入侵途徑中，漏洞利用占 32%、語音釣魚占 11%、先前已入侵占 10%，而電子郵件釣魚降到 6%。攻擊手法持續變化，只比對已知指標不足以應對。
-- **對系統設計的影響**：以 ATT&CK 技術作為領域知識的核心單位（⑥ Domain Knowledge）；分級模型避免過度依賴 IP、hash 這類容易變動的特徵，以免學到捷徑。
+- **定義**：分析與防禦重點應聚焦於攻擊者的戰術、技術與程序（TTPs），而非輕易可變更的入侵指標（IOCs，如 IP、網域、檔案 Hash）。
+- **為什麼重要**：攻擊者更換 IP 或 Hash 成本極低（數秒內即可完成）；但要更換滲透技術與手法（如 Living-off-the-Land）成本極高。
+- **證據與來源**：
+  - Pyramid of Pain [20]：痛點金字塔指出 Hash/IP 位於底層（Trivial），而 TTPs 位於最頂層（Tough），針對 TTPs 防禦能對攻擊者造成最大阻礙。
+  - Mandiant M-Trends 2026 [15]：初始入侵中漏洞利用占 32%、語音釣魚 11%，攻擊手法快速變異，單純靜態名單比對不足以應對。
+  - MITRE ATT&CK [22]：以攻擊者行為為核心的領域標準框架。
+- **如何影響系統設計**：
+  - 特徵工程避免過度依賴瞬態 IP、Hash 等高基數標籤，防止模型學到捷徑特徵。
+  - 以 ATT&CK 技術向量化作為領域知識核心（⑥），依行為模式進行關聯推論。
+  - 系統報告與解釋內容以 ATT&CK 技術標籤與對應防禦指引為主體。
+- **對應模組**：**⑤ Analytics Engine**、**⑥ Domain Knowledge Integration**、**⑧ Output & Interaction**。
 
-#### M5. 自動化要可驗證，人保留最終判斷
+#### M5. 自動化要可驗證，人保留最終判斷（Verifiable Automation）
 
-- **意義**：AI 可以加速分級，但分析師必須能理解並檢查 AI 的依據；如果分析師只會照單全收，系統反而會變得更危險。
-- **證據**：
-  - [12]（696 份問卷、29 場訪談）：自動化程度提高後，分析師降低監控、更依賴自動化結果；**系統性的驗證程序**能減緩這個現象。
-  - [18]（720 份問卷）：分析師偏好「全人工」或「全自動」兩個極端，對中間的協作模式興趣不高，使人機協作更難推行。
-  - [26]（14 個月實地部署）：分析師是否採用 AI 的輸出，關鍵在於**是否容易驗證**，而不只是準確率。
-  - NIST SP 800-61 Rev. 3 [13] 把事件應變放在組織治理（Govern）與風險管理之下，責任仍在組織與人身上。
-- **對系統設計的影響**：每個結論都附上證據鏈與來源（NFR1）；ML 與 LLM 結論衝突時明確標示衝突點，而不是只給一個答案；設置「需人工複核」狀態，並在報告中說明為什麼需要人看。
+- **定義**：AI 的每一個分級結論與處置建議都必須附帶明確可追溯的證據鏈與來源日誌，使人類分析師能以最低負荷快速查證；人機協同中人保留最終裁量權。
+- **為什麼重要**：完全黑箱的自動化會引發分析師不信任，或反向誘發「自動化自滿（Automation Complacency）」，失去人類把關防線。
+- **證據與來源**：
+  - Tilbury & Flowerday (2026) [12]：對 696 名分析師調查證實，自動化提高後分析師會降低監控，但**系統性的驗證程序**能顯著減緩此自滿偏誤。
+  - Tilbury & Flowerday (2025) [18]：分析師在自陳偏好上往往傾向全人工或全自動兩極，人機協同需要特別設計驗證機制才易被接受。
+  - Banstola 等人 (2026) [26]：14 個月真實 SOC 部署證實，影響採納的關鍵在於**輸出是否容易驗證（Verifiability）**，而非純準確率。
+  - NIST SP 800-61 Rev. 3 [13]：強調資安治理（Govern），最終事件應變責任仍在組織與人身上。
+- **如何影響系統設計**：
+  - 每個結論結構化附帶證據鏈（TreeSHAP 特徵貢獻、關聯日誌、ATT&CK 技術、處置依據，滿足 NFR1）。
+  - ML 與 LLM 結論衝突時明確標示分歧點，主動設置「需人工複核」狀態並產出查證摘要。
+- **對應模組**：**⑤ Analytics Engine**、**⑦ Decision & Escalation**、**⑧ Output & Interaction**。
 
 ### Q2. 三個最重要的專業爭論
 
 #### 爭論 1：全自動 AI SOC ↔ 人機協作（AI 輔助分析師）
 
-| | 觀點 A：應走向全自動 AI SOC | 觀點 B：AI 只能輔助，人必須在迴圈內 |
+| 比較面向 | 觀點 A：應走向全自動 AI SOC | 觀點 B：AI 只能輔助，人必須在迴圈內 |
 |---|---|---|
-| **主張** | 告警量已超過人力負荷，只有自動化才能跟上 | 現階段 AI 在資安推理上仍不可靠，全自動會放大錯誤 |
-| **最有力證據** | IBM 2026 [14]：大量使用 AI 與自動化的組織平均節省 193 萬美元、週期縮短 65 天；Microsoft 已在大規模環境部署 ML 分級與排序 [1][7] | [3]：五種 LLM Agent 策略都漏判 ≥ 40.4% 的攻擊告警；[4] 最佳模型 reward 只有 0.606；[5] 指出 LLM 遠未達到 benchmark 上限；[12] 顯示自動化會造成分析師自滿 |
+| **核心主張** | 告警量遠超人力負荷，唯有全自動秒級圍堵才能壓制自動化攻擊 | 資安推理具幻覺與不可預測性，全自動決策在非對稱成本下風險過高 |
+| **最有力的證據** | IBM 2026 [14]：廣泛使用 AI/自動化之組織平均節省 193 萬美元、縮短 65 天應變週期；Microsoft [1][7] 已在百萬事件規模上線自動分級 | Tsegai 等人 [3]：主流 LLM Agent 漏判率 $\ge 40.4\%$；ExCyTIn-Bench [4] 最佳 reward 僅 0.606；Tilbury & Flowerday [12] 揭示自動化自滿風險 |
 
-- **目前共識**：由 AI 處理大量、低風險、高信心的告警，高風險或不確定的事件交給人判斷；AI 的價值在於「縮短調查時間、提供依據」，而非取代決策。[3] 的 AIDA 與 [2] 的 CORTEX 都在不確定時把告警升級給人；[26] 的實地部署中，Agent 只提供分析，結案仍由分析師決定。
+- **領域目前共識**：採行分層協作。AI 自動化處理高信心、低風險、重複性高的事件；低信心、高衝擊、涉及核心資產的事件交由人類分析師仲裁；AI 角色為「縮短調查時間、提供查證依據」而非越權取代最終責任。
 - **尚未解決的問題**：
-  1. 升級門檻要怎麼校準？[3] 的 AIDA 用 18.4% 的升級率換取 3.1% 的漏判率，這個比例在不同規模的 SOC 是否可接受？
-  2. AI 判錯時責任歸屬為何？
-  3. 分析師本身偏好「全人工」或「全自動」兩極 [18]，中間的協作模式要如何設計才會被採用？
-- **本專題的立場**：採觀點 B 的人機協作，但用 ML 處理大量判斷以回應觀點 A 的效率需求；實驗同時報告漏判率與升級率，讓取捨可被量化討論。
+  1. 升級門檻 $\tau$ 缺乏動態適應機制（AIDA 的 18.4% 升級率對不同規模 SOC 負荷不同）；
+  2. 自動化誤判造成業務中斷時的法律責任與審計歸屬。
+- **本專題的設計決策**：採人機協同架構。以 GBDT 機率結合衝突檢測與後段戰術守衛，遇不確定性主動升級，實驗同時量化漏判率與升級率之取捨。
 
 #### 爭論 2：規則式偵測（Detection Engineering）↔ 機器學習
 
-| | 觀點 A：規則式偵測與分級 | 觀點 B：ML / AI 驅動的偵測與分級 |
+| 比較面向 | 觀點 A：規則式偵測與分級 | 觀點 B：ML / AI 驅動的偵測與分級 |
 |---|---|---|
-| **主張** | 規則透明、可稽核、可直接對應 ATT&CK，誤報可透過調校控制 | 規則無法涵蓋未知攻擊，維護成本隨規模爆炸；ML 能從大量資料中學到人寫不出來的模式 |
-| **最有力證據** | Sommer & Paxson [19] 指出 ML 用於入侵偵測有根本困難：錯誤成本高、偵測結果與語意之間有落差、網路流量本身高度多樣；Arp 等人 [16] 分析 30 篇頂級會議論文，發現 ML 資安研究普遍存在評估陷阱；[10]、[11] 以 Kill Chain 規則與攻擊圖就能有效排序 | [1]、[7] 的 ML 分級與排序已在數千個組織部署；[8] 回顧 87 篇研究，AI 告警篩選是持續成長的方向 |
+| **核心主張** | 規則透明、可審計、可直接映射 ATT&CK，誤報可針對性調校排除 | 規則無法涵蓋新型與變形攻擊，維護成本爆炸；ML 擅長在高維特徵中發掘關聯 |
+| **最有力的證據** | Sommer & Paxson [19] 指出 ML 用於入侵偵測存在「封閉世界假設失敗」之根本限制；Arp 等人 [16] 揭露 ML 資安論文普遍存在評估陷阱；Sadlek [10] 以規則攻擊圖即達 0.95 AUC | Microsoft [1][7] 證實 GBDT 分級與排序在 6,100 家真實企業遙測中達到 0.87 Macro-F1；Ndichu [8] 綜述 87 篇研究肯定 AI 告警篩選之必要性 |
 
-- **目前共識**：混合式架構。已知攻擊用規則偵測，ML 用來排序、分級與降低誤報，規則與領域知識則作為 ML 的約束與解釋。[8] 把 AI 告警篩選定位為偵測器產生告警之後的下游工作；[1]、[7] 的 ML 分級與排序也都建立在既有偵測器的告警之上。
+- **領域目前共識**：混合共生架構。前線由規則式偵測器捕獲疑似活動；下游由 ML 與 AI 進行海量事件分級、優先級排序與多維去重，並將資安規則視為硬性約束。
 - **尚未解決的問題**：
-  1. **對抗穩健性**：攻擊者可以刻意讓行為看起來像良性活動，[8] 將此列為主要缺口。
-  2. **概念漂移**：模型上線後環境與攻擊手法改變，多久需要重新訓練？
-  3. **跨環境泛化**：在 A 公司訓練的模型能否用在 B 公司？[8] 同樣列為缺口。
-- **本專題的立場**：混合式。ML（GBDT）負責機率判斷，Kill Chain 規則提供硬性約束（Algorithm 2 第 06–08 行），LLM 負責整合與解釋。
+  1. 對抗性穩健性（Adversarial Robustness）：攻擊者刻意調製日誌欄位繞過 ML 模型 [8]；
+  2. 概念漂移（Concept Drift）與跨環境遷移泛化難題。
+- **本專題的設計決策**：混合神經符號架構。由 GBDT 承擔大規模統計機率預測，由 Kill Chain 規則實施關鍵節點硬性約束，由 LLM 負責多輪調查與語意整合。
 
 #### 爭論 3：公開資料集與 Benchmark 能否代表真實 SOC？
 
-| | 觀點 A：公開資料集是可重現研究的基礎 | 觀點 B：公開資料集與真實環境落差大，結果容易高估 |
+| 比較面向 | 觀點 A：公開資料集是可重現研究的基石 | 觀點 B：公開資料與真實環境存在巨大鴻溝 |
 |---|---|---|
-| **主張** | 沒有公開資料就無法比較方法、重現結果；新一代資料集已更接近真實 | 資料集的標註錯誤、取樣偏差與不當切分，使論文中的高分無法反映實際表現 |
-| **最有力證據** | GUIDE [1] 是來自 6.1k 個組織的真實事件，標籤由真實分析師標註；ExCyTIn-Bench [4] 以自動生成題目提供可驗證的答案；AIP [7] 在 GUIDE 上補上排序標籤 | Engelen 等人 [17] 發現 CICIDS2017 在流量產生、流量建構、特徵擷取與標註上都有問題，修正後**超過 20% 的流量需要重建或重新標註**，對後繼的 2018 版初步檢查也發現流量建構錯誤；Arp 等人 [16] 分析近 10 年 30 篇頂級會議論文，指出取樣偏差、data snooping（訓練時用到實務上拿不到的資料，例如測試資料洩漏）等陷阱普遍存在；[8] 將「評估方法」列為領域主要缺口 |
+| **核心主張** | 缺乏公開資料即無法進行科學橫向評比與可重現驗證；新一代資料集已大幅逼近真實 | 公開資料充斥合成痕跡、標籤雜訊與切分偏差，論文高分上線往往迅速崩潰 |
+| **最有力的證據** | Microsoft GUIDE [1] 來自 6,100 家真實組織、含分析師標記；ExCyTIn-Bench [4] 提供 57 張關聯表與真實攻擊鏈 | Engelen 等人 [17] 證實權威 CICIDS2017 超過 20% 流量存在錯誤；Arp 等人 [16] 揭露 Data Snooping 普遍存在；Ndichu [8] 警告 benchmark 結果應視為上限 |
 
-- **目前共識**：公開資料集仍然必要，但需要使用多個資料集交叉驗證、避免已知的評估陷阱（例如隨機切分造成資料洩漏），並在論文中明確說明限制。[16] 列出取樣偏差、data snooping 等常見陷阱並提出對應建議；[8] 也提醒，在 benchmark 上得到的量化結果應視為上限。
+- **領域目前共識**：公開資料集依然必要，但評估方法必須極其嚴謹，嚴禁隨機切分（Random Split），必須依事件、實體或時間進行分組隔離，並誠實揭露資料集局限性。
 - **尚未解決的問題**：
-  1. 目前沒有同時具備「真實環境、完整原始 log、事件層級真實標籤」的公開端到端 SOC benchmark。GUIDE 有真實標籤但欄位匿名化，且依論文只涵蓋兩週；ExCyTIn 有完整 log 但只是單一受控環境。
-  2. 隱私與商業機密限制了真實 SOC 資料的公開程度。
-- **本專題的立場**：同時使用 GUIDE（真實標籤）和 ExCyTIn-Bench（完整 log 與調查推理），以事件和組織為單位切分資料以避免洩漏，並在 Limitations 中明確說明兩者各自的限制。
+  1. 隱私法規限制導致業界難以公開兼具「真實未脫敏 Log」與「分析師真實標籤」的端到端資料集。
+- **本專題的設計決策**：雙軌評測 + 嚴防評估陷阱。分級基準使用 GUIDE 並嚴格依事件與組織進行分組切分；調查推理使用 ExCyTIn-Bench 評估；並在報告中完整揭露局限性。
 
 ### Q3. 十個深度理解問題
 
-> 每題附上「深入理解者應該能談到的重點」，可作為組內自我檢核與口頭報告準備。
+> 每題涵蓋不同推理層次，包含題目情境、實務深層解析與系統設計對策。
 
-| # | 類型 | 問題 | 深入理解者應該能談到的重點 |
+| # | 類型 | 問題 | 深入理解者應該能談到的重點與系統設計解析 |
 |---|---|---|---|
-| 1 | Why | 某個 Detector 有 90% 的告警最後都是 FP，為什麼 SOC 通常不直接把它關掉？ | 關掉就失去對該技術的偵測覆蓋；攻擊者正好可以躲在雜訊中；應該先區分是 FP（規則寫錯）還是 BP（行為真實但無害），再決定是調校規則、加白名單，還是改為事件層級關聯 |
-| 2 | What-if | 如果攻擊者知道你的 Agent 在「查無相關紀錄」時傾向結案，他會怎麼做？你的系統要怎麼防？ | 攻擊者會刪除或停用 log（ATT&CK 的 Defense Evasion 戰術，例如清除指標）；「log 突然中斷」本身就是可疑訊號；呼應 Assume Breach 與 [3] 的發現；系統應把「資料缺失」當成需要升級的訊號，而非無害的證據 |
-| 3 | Trade-off | 你的升級門檻 τ 要怎麼設定？如果把所有事件都升級給人，漏判率就是 0，為什麼這不是好答案？ | 漏判與誤報成本不對稱（M3），但分析師人力有限；升級太多會造成告警疲勞，反而讓人漏看；門檻應根據 SOC 人力與風險容忍度，在驗證集上依「漏判率–升級率」曲線選擇，而不是只看 F1 |
-| 4 | Failure Case | 一個被 Agent 高信心判為 BP 的事件，後來證實是真實攻擊：攻擊者使用系統內建的管理工具（Living off the Land）。為什麼模型會失敗？ | 攻擊者使用合法工具時，行為特徵和管理員日常作業幾乎相同；BP 與 TP 的差異在於「意圖」與「上下文」（誰、何時、接在什麼之後），而非單一行為；解法是加入攻擊鏈脈絡（M2）、帳號與主機的基線行為，以及對這類技術降低自動結案的信心 |
-| 5 | Evidence | 你要怎麼證明這個 Agent 真的對 SOC 有幫助，而不只是在資料集上分數高？ | 資料集分數可能因資料洩漏或取樣偏差而高估 [16][17]；應補充：漏判率與升級率、跨資料集評估、報告品質評分、分析師使用時的決策正確率與時間；並要檢查分析師是否因此產生自動化自滿 [12] |
-| 6 | Comparison | TP、BP、FP 三者有什麼差別？為什麼區分 BP 和 FP 對 SOC 很重要？ | TP：真實惡意活動；BP：偵測正確但活動是被授權或無害的（例如資安團隊的滲透測試）；FP：偵測邏輯本身錯了。FP 需要修改偵測規則，BP 需要建立例外或白名單；混為一談會導致錯誤的調校方向；實務研究也發現多數「誤報」其實是 BP [24] |
-| 7 | Design Decision | 為什麼本專題的分級主力是 GBDT，而不是直接讓 LLM 判斷？ | GUIDE 欄位多為匿名化 ID，LLM 無法從中讀出語意；GBDT 在大量結構化資料上便宜、穩定、機率可校準、可用 SHAP 解釋；[3] 顯示 LLM Agent 單獨分級漏判率高；LLM 的價值在整合知識、處理衝突與產生報告 |
-| 8 | Real-world Scenario | 凌晨三點，同一個帳號先從海外 IP 登入成功，接著建立郵件自動轉寄規則，然後大量下載 SharePoint 檔案。你會怎麼分級與處置？ | 對應 ATT&CK：Initial Access（有效帳號）→ Persistence / Collection（郵件轉寄規則）→ Exfiltration；攻擊鏈已推進到後段，應判為高風險 TP 並升級；處置：停用帳號與工作階段、移除轉寄規則、保留證據、檢查同一來源的其他帳號；依 NIST SP 800-61 Rev. 3 [13] 進入 Respond 與 Recover |
-| 9 | Why | MITRE ATT&CK 為什麼要分成 Tactic 和 Technique 兩層？這對事件分級有什麼意義？ | Tactic 是攻擊者的「目的」（例如取得憑證、橫向移動），Technique 是「達成目的的方法」；同一個 Technique 可能服務於不同 Tactic；Tactic 反映攻擊推進到哪個階段，可用來判斷嚴重度（M2、[10]），Technique 則用於偵測與防禦對應 |
-| 10 | Evidence / Design Decision | 如果把 GUIDE 隨機切成 train 和 test，會出現什麼問題？應該怎麼切？ | 同一事件的不同告警、同一組織的相似事件會同時出現在 train 和 test，造成資料洩漏、高估表現（[16] 的典型陷阱）；應以事件、組織或時間為單位切分，並說明這樣更接近模型上線後面對新事件、新客戶的情境 |
+| 1 | Why | 某個 Detector 有 90% 的告警最後都是 FP，為什麼 SOC 通常不直接把它關掉？ | 關閉規則等同主動放棄對該 ATT&CK 技術的偵測覆蓋，攻擊者可藉此盲點長驅直入。實務上多數所謂「誤報」本質是 Benign Positive（BP，合法授權活動，如例行掃描或維護腳本）[24]。成熟 SOC 不會盲目關閉，而是透過白名單例外、時間窗口限制進行調校，或交由本系統之事件聚合引擎與其他告警關聯後綜合判定。 |
+| 2 | What-if | 如果攻擊者知道你的 Agent 在「查無相關紀錄」時傾向結案，他會怎麼做？你的系統要怎麼防？ | 攻擊者將主動利用 ATT&CK Defense Evasion 戰術（如清除系統日誌 `wevtutil`、記憶體中無檔案執行 Living-off-the-Land），製造查無紀錄的假象以誘騙 Agent 結案。Tsegai 等人 [3] 實證這是 LLM 漏判 40.4% 的主因。系統對策為貫徹 Assume Breach：將日誌中斷視為可疑徵候，自動擴大關聯查詢；若預算耗盡仍查無佐證，嚴禁自動結案，強制標記「證據缺失」升級人工調查。 |
+| 3 | Trade-off | 你的升級門檻 $\tau$ 要怎麼設定？如果把所有事件都升級給人，漏判率就是 0，為什麼這不是好答案？ | 漏判與誤報成本高度非對稱（M3），但人類分析師處理容量有限。全數升級會引發極度嚴重的告警疲勞（Alert Fatigue）[8][12]，分析師被迫走馬看花，反而在海量雜訊中漏看真實威脅。門檻 $\tau$ 需依 SOC 實際人力編制，在驗證集上繪製「漏判率 vs. 升級率」取捨曲線，求取在人力上限內的最大安全防護邊界。 |
+| 4 | Failure Case | 一個被 Agent 高信心判為 BP 的事件，後來證實是真實攻擊：攻擊者使用系統內建的管理工具（Living off the Land）。為什麼模型會失敗？ | LotL 攻擊（如 `certutil`, `wmic`）其特徵（微軟數位簽章、常規系統路徑）與管理員合法維運完全相同。BP 與 TP 的本質差異不在於「工具本身」，而在於「行為意圖與上下脈絡（誰在何時、對何資產、接在何種前置動作之後）」。單點特徵必然失效。對策為引入攻擊鏈前後時序關聯（M2）、帳號基線異常分析，並對 LotL 技術設定自動結案信心上限。 |
+| 5 | Evidence | 你要怎麼證明這個 Agent 真的對 SOC 有幫助，而不只是在資料集上分數高？ | 公開資料集的高 F1 分數極易因資料洩漏或採樣偏差而高估 [16][17]。真實價值需從三維度驗證：（1）實務效益：平均分級時間（MTTT）縮短幅度；（2）可驗證性採納率：依 Banstola et al. [26]，分析師撰寫結案報告時主動沿用 Agent 證據鏈的比例（目標 $\ge 85\%$）；（3）人因自滿監控：依 Tilbury & Flowerday [12]，透過注入金絲雀事件監控分析師是否仍保持批判性審查。 |
+| 6 | Comparison | TP、BP、FP 三者有什麼差別？為什麼區分 BP 和 FP 對 SOC 很重要？ | TP 為真實惡意威脅；BP 為偵測正確但行為經授權或無害；FP 為偵測邏輯本身錯誤。若混為一談：將 BP 誤當 FP 會促使工程師放寬偵測規則，破壞安全防線；將 FP 誤當 BP 會導致錯誤增設白名單，規則缺陷永遠未被修復。Alahmadi et al. [24] 指出嚴格劃分 BP 與 FP 是告警疲勞調校的唯一正軌。 |
+| 7 | Design Decision | 為什麼本專題的分級主力是 GBDT，而不是直接讓 LLM 判斷？ | GUIDE 資料集多為經雜湊脫敏的高基數 ID（如 `Account_hash`），LLM 無法獲取先驗語意且極易產生幻覺；GBDT 處理單起事件僅需數毫秒、成本趨近於零，且機率經校準可提供 TreeSHAP 嚴格特徵歸因；若全由 LLM 處理，單告警耗費 3.4 萬 tokens、延遲 12.7 秒、成本 $0.109 [3]，且漏判率超過 40%。GBDT 扛住高吞吐基準，LLM 退居二線負責多輪調查與報告整合為最優折衷。 |
+| 8 | Real-world Scenario | 凌晨三點，同一個帳號先從海外 IP 登入成功，接著建立郵件自動轉寄規則，然後大量下載 SharePoint 檔案。你會怎麼分級與處置？ | 對應 ATT&CK 攻擊鏈：Initial Access（有效帳號 T1078）$\rightarrow$ Persistence / Collection（郵件轉寄規則 T1114.003）$\rightarrow$ Exfiltration（機密檔案外傳 T1567）。攻擊鏈已推至最晚期戰術階段，觸發 M2 晚期高危規則，立即判定 High-Confidence TP 並升級發布 P0 警報。依 NIST SP 800-61 Rev. 3 [13] 立即啟動處置：凍結帳號、撤銷 Session Token、封鎖惡意海外 IP、撤銷信箱轉寄規則並啟動資料外洩影響評估。 |
+| 9 | Why | MITRE ATT&CK 為什麼要分成 Tactic 和 Technique 兩層？這對事件分級有什麼意義？ | Tactic 代表攻擊者的「戰略目標（Why / Objective）」，Technique 代表「具體行動手段（How / Action）」。同一 Technique 可服務於不同 Tactic（如 `ssh` 可為維運亦可為橫向移動 T1021.004），需依 Tactic 時序脈絡消歧；同時，Tactic 反映攻擊推進階段，Sadlek et al. [10] 證實以最遠 Tactic 判定嚴重度可達 0.95 AUC；此外 Technique 精確映射 NIST 與 D3FEND 防禦措施，為處置建議提供結構依據。 |
+| 10 | Evidence / Design Decision | 如果把 GUIDE 隨機切成 train 和 test，會出現什麼問題？應該怎麼切？ | 犯下 Arp et al. [16] 警告的 Data Snooping / Leakage 致命陷阱：同一起事件的多筆告警或同一企業組織的特有日誌雜訊同時散落於訓練與測試集，模型只需記住特有雜訊即可獲取虛高分數，上線面對未知事件或未知租戶泛化能力崩潰。正確切分方案：以「事件 ID」進行 GroupKFold 杜絕事件洩漏；以「組織 ID」切分驗證跨租戶泛化；以「時間時序」前後切分模擬真實 SOC 面對未來未知威脅情境。 |
 
 ## 5. Proposed Scheme
 
