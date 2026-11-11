@@ -34,3 +34,4 @@ The system SHALL map the identified attack techniques and incident severity to r
 #### Scenario: Actionable response recommendation
 - **WHEN** an incident is triaged as a True Positive with account compromise techniques
 - **THEN** the system outputs structured containment steps including account session revocation and host isolation
+

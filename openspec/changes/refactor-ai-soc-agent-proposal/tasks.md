@@ -134,3 +134,4 @@
 - Change remains active during the proposal refactor phase (`refactor-ai-soc-agent-proposal`).
 - Do not execute `openspec archive` until tasks 1.2 through 6.2 are implemented and empirical evaluations pass.
 - Future archive command: `openspec archive refactor-ai-soc-agent-proposal`
+

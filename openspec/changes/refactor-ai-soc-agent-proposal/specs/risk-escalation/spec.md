@@ -30,3 +30,4 @@ The system SHALL compare the predicted class from the machine learning model aga
 #### Scenario: Conflicting classification detection
 - **WHEN** the ML model predicts True Positive while the LLM reasoning agent predicts False Positive
 - **THEN** the system flags the incident with CONFLICT status and highlights the exact divergence rationale
+

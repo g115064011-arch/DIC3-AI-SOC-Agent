@@ -34,3 +34,4 @@ The system SHALL evaluate whether an empty query result stems from absence of ma
 #### Scenario: Log discontinuity detected
 - **WHEN** a log query for a specific time window returns empty records but adjacent heartbeat telemetry is missing
 - **THEN** the system marks the incident evidence state as INSUFFICIENT_EVIDENCE rather than benign
+

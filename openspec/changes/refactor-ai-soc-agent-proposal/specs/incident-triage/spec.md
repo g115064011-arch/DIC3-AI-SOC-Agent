@@ -27,3 +27,4 @@ The system SHALL compute calibrated prediction probabilities across True Positiv
 #### Scenario: Missing feature imputation
 - **WHEN** certain optional telemetry features are null or missing in the incident
 - **THEN** the model imputes missing values using pre-computed training medians and executes inference without failure
+

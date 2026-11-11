@@ -34,3 +34,4 @@ The system SHALL record corrections, rating overrides, and notes submitted by hu
 #### Scenario: Analyst verdict correction logging
 - **WHEN** an analyst overrides an automated triage verdict from False Positive to True Positive
 - **THEN** the system persists the corrected label, analyst remarks, and timestamp into the feedback audit store
+

@@ -186,3 +186,4 @@ Output: label, confidence conf, flag set flags
   $\rightarrow$ *Mitigation*: Hard budget limit $B$ on tool calls per incident; stratified sampling of 200 incidents for rapid development.
 - **[Risk: Analyst Automation Complacency]** Analysts blindly approve agent suggestions [12].  
   $\rightarrow$ *Mitigation*: Enforce mandatory TreeSHAP attribution displays and explicit conflict warnings requiring active analyst confirmation.
+

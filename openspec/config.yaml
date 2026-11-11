@@ -5,7 +5,7 @@ context: |
   Project: AI SOC Analyst Agent (DIC3 Proposal Refactor)
   Domain: Security Operations Center (SOC) Alert Triage, Cyber Threat Investigation, MITRE ATT&CK Reasoning
   Architecture: Eight-module domain agent (① User -> ② Input -> ③ Planner -> ④ Retrieval -> ⑤ Analytics -> ⑥ Domain Knowledge -> ⑦ Decision -> ⑧ Output)
-  Tech Stack: Python 3.14, DuckDB, LightGBM/XGBoost, TreeSHAP, Chroma Vector DB, LLM Tool-Use (ReAct), Streamlit
+  Tech Stack: Python 3, DuckDB, LightGBM/XGBoost, TreeSHAP, Chroma Vector DB, LLM Tool-Use (ReAct), Streamlit
   Datasets: Microsoft GUIDE (1M incidents, 6.1k orgs, Kaggle CDLA-2.0), ExCyTIn-Bench (57 log tables, 8 attack chains, ICML 2026), MITRE ATT&CK STIX 2.1
   Standards: RFC 2119 (SHALL, MUST), NIST SP 800-61 Rev. 3, MITRE D3FEND
   Naming Conventions: Kebab-case capabilities (incident-triage, evidence-retrieval, domain-knowledge-reasoning, risk-escalation, explainability-reporting), PascalCase schemas (TriageRequest, TriageReport)

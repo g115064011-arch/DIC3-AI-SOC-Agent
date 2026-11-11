@@ -35,3 +35,4 @@ None. This change initializes the baseline capabilities for the AI SOC Analyst A
 - **Codebase**: Creates tracking contracts for data preprocessing pipelines (`experiments/e0_profile_guide.py`), model training scripts, and future `src/soc_agent/` modules.
 - **Verification**: Establishes strict behavioral acceptance criteria via Gherkin-style Scenarios and RFC 2119 requirements.
 - **Lifecycle**: Establishes active change status during proposal refactor phase; formal archive deferred until full empirical implementation.
+

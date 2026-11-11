@@ -17,7 +17,7 @@ This project designs a **Domain AI SOC Analyst Agent** combining Machine Learnin
 
 ## 2. Technical Stack & Tools
 
-- **Language & Runtime**: Python 3.14+, Node.js v22.14.0+
+- **Language & Runtime**: Python 3, Node.js (>= 20.19.0)
 - **Data Analytics & Storage**: DuckDB, pandas, PyArrow
 - **Machine Learning**: LightGBM, XGBoost, Scikit-learn
 - **Explainability**: SHAP (TreeSHAP)
@@ -60,3 +60,4 @@ This project designs a **Domain AI SOC Analyst Agent** combining Machine Learnin
 - **Requirements**: MUST follow RFC 2119 with explicit `SHALL` or `MUST`.
 - **Scenarios**: Gherkin-inspired `WHEN ... THEN ...` verification blocks.
 - **Lifecycle Policy**: During Proposal Refactor (DIC3), changes remain **active** (`openspec/changes/refactor-ai-soc-agent-proposal/`). No `openspec archive` until actual code implementation and test passes.
+
