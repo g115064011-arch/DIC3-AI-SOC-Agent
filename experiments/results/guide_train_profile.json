@@ -1,0 +1,609 @@
+{
+ "rows": 9516837,
+ "incidents": 707108,
+ "orgs": 5769,
+ "timestamp_range": [
+  "2023-11-20T16:32:22.000Z",
+  "2024-06-17T14:45:38.000Z"
+ ],
+ "grade_by_row": {
+  "TruePositive": 3322713,
+  "FalsePositive": 2031967,
+  "BenignPositive": 4110817,
+  "<NA>": 51340
+ },
+ "grade_by_incident": {
+  "TruePositive": 145586,
+  "FalsePositive": 214924,
+  "BenignPositive": 346598
+ },
+ "category": {
+  "InitialAccess": 4293041,
+  "Exfiltration": 1577965,
+  "SuspiciousActivity": 1003933,
+  "CommandAndControl": 826691,
+  "Impact": 750885,
+  "CredentialAccess": 300518,
+  "Execution": 267594,
+  "Malware": 144081,
+  "Discovery": 129342,
+  "Persistence": 72682,
+  "DefenseEvasion": 46662,
+  "LateralMovement": 41754,
+  "Ransomware": 18974,
+  "UnwantedSoftware": 18211,
+  "Collection": 14753,
+  "PrivilegeEscalation": 4671,
+  "Exploit": 4648,
+  "CredentialStealing": 388,
+  "WebExploit": 38,
+  "Weaponization": 6
+ },
+ "action_grouped": {
+  "<NA>": 9460773,
+  "ContainAccount": 53760,
+  "IsolateDevice": 2237,
+  "Stop Virtual Machines": 67
+ },
+ "mitre_row_ratio": 0.4254,
+ "distinct_techniques": 432,
+ "top_techniques": [
+  [
+   "T1078",
+   1469659
+  ],
+  [
+   "T1078.004",
+   1357816
+  ],
+  [
+   "T1566.002",
+   815784
+  ],
+  [
+   "T1566",
+   663278
+  ],
+  [
+   "T1110",
+   189475
+  ],
+  [
+   "T1133",
+   177415
+  ],
+  [
+   "T1566.001",
+   140569
+  ],
+  [
+   "T1110.003",
+   108948
+  ],
+  [
+   "T1110.001",
+   107551
+  ],
+  [
+   "T1071",
+   96351
+  ],
+  [
+   "T1046",
+   78464
+  ],
+  [
+   "T1087",
+   77704
+  ],
+  [
+   "T1087.002",
+   60838
+  ],
+  [
+   "T1190",
+   52710
+  ],
+  [
+   "T1098",
+   51844
+  ]
+ ],
+ "columns": {
+  "Id": {
+   "null_ratio": 0.0,
+   "nunique": null,
+   "samples": [
+    "180388628218",
+    "455266534868",
+    "1056561957389",
+    "1279900258736",
+    "214748368522"
+   ]
+  },
+  "OrgId": {
+   "null_ratio": 0.0,
+   "nunique": 5769,
+   "samples": [
+    "0",
+    "88",
+    "809",
+    "92",
+    "148"
+   ]
+  },
+  "IncidentId": {
+   "null_ratio": 0.0,
+   "nunique": 466151,
+   "samples": [
+    "612",
+    "326",
+    "58352",
+    "32992",
+    "4359"
+   ]
+  },
+  "AlertId": {
+   "null_ratio": 0.0,
+   "nunique": null,
+   "samples": [
+    "123247",
+    "210035",
+    "712507",
+    "774301",
+    "188041"
+   ]
+  },
+  "Timestamp": {
+   "null_ratio": 0.0,
+   "nunique": 760944,
+   "samples": [
+    "2024-06-04T06:05:15.000Z",
+    "2024-06-14T03:01:25.000Z",
+    "2024-06-13T04:52:55.000Z",
+    "2024-06-10T16:39:36.000Z",
+    "2024-06-15T01:08:07.000Z"
+   ]
+  },
+  "DetectorId": {
+   "null_ratio": 0.0,
+   "nunique": 8428,
+   "samples": [
+    "7",
+    "58",
+    "423",
+    "2",
+    "9"
+   ]
+  },
+  "AlertTitle": {
+   "null_ratio": 0.0,
+   "nunique": 86149,
+   "samples": [
+    "6",
+    "43",
+    "298",
+    "2",
+    "74"
+   ]
+  },
+  "Category": {
+   "null_ratio": 0.0,
+   "nunique": 20,
+   "samples": [
+    "InitialAccess",
+    "Exfiltration",
+    "InitialAccess",
+    "CommandAndControl",
+    "Execution"
+   ]
+  },
+  "MitreTechniques": {
+   "null_ratio": 0.5746,
+   "nunique": 1193,
+   "samples": [
+    "T1189",
+    "T1078;T1078.004",
+    "T1566",
+    "T1098;T1114",
+    "T1559;T1106;T1059.005"
+   ]
+  },
+  "IncidentGrade": {
+   "null_ratio": 0.0054,
+   "nunique": 3,
+   "samples": [
+    "TruePositive",
+    "FalsePositive",
+    "FalsePositive",
+    "BenignPositive",
+    "TruePositive"
+   ]
+  },
+  "ActionGrouped": {
+   "null_ratio": 0.9941,
+   "nunique": 3,
+   "samples": [
+    "ContainAccount",
+    "ContainAccount",
+    "ContainAccount",
+    "ContainAccount",
+    "ContainAccount"
+   ]
+  },
+  "ActionGranular": {
+   "null_ratio": 0.9941,
+   "nunique": 16,
+   "samples": [
+    "account password changed",
+    "update stsrefreshtokenvalidfrom timestamp.",
+    "update stsrefreshtokenvalidfrom timestamp.",
+    "account disabled",
+    "update stsrefreshtokenvalidfrom timestamp."
+   ]
+  },
+  "EntityType": {
+   "null_ratio": 0.0,
+   "nunique": 33,
+   "samples": [
+    "Ip",
+    "User",
+    "Url",
+    "Url",
+    "User"
+   ]
+  },
+  "EvidenceRole": {
+   "null_ratio": 0.0,
+   "nunique": 2,
+   "samples": [
+    "Related",
+    "Impacted",
+    "Related",
+    "Related",
+    "Impacted"
+   ]
+  },
+  "DeviceId": {
+   "null_ratio": 0.0,
+   "nunique": 75826,
+   "samples": [
+    "98799",
+    "98799",
+    "98799",
+    "98799",
+    "98799"
+   ]
+  },
+  "Sha256": {
+   "null_ratio": 0.0,
+   "nunique": 106416,
+   "samples": [
+    "138268",
+    "138268",
+    "138268",
+    "138268",
+    "138268"
+   ]
+  },
+  "IpAddress": {
+   "null_ratio": 0.0,
+   "nunique": 285957,
+   "samples": [
+    "27",
+    "360606",
+    "360606",
+    "360606",
+    "360606"
+   ]
+  },
+  "Url": {
+   "null_ratio": 0.0,
+   "nunique": 123252,
+   "samples": [
+    "160396",
+    "160396",
+    "68652",
+    "13",
+    "160396"
+   ]
+  },
+  "AccountSid": {
+   "null_ratio": 0.0,
+   "nunique": 358401,
+   "samples": [
+    "441377",
+    "22406",
+    "441377",
+    "441377",
+    "449"
+   ]
+  },
+  "AccountUpn": {
+   "null_ratio": 0.0,
+   "nunique": 530183,
+   "samples": [
+    "673934",
+    "23032",
+    "673934",
+    "673934",
+    "592"
+   ]
+  },
+  "AccountObjectId": {
+   "null_ratio": 0.0,
+   "nunique": 343516,
+   "samples": [
+    "425863",
+    "22795",
+    "425863",
+    "425863",
+    "440"
+   ]
+  },
+  "AccountName": {
+   "null_ratio": 0.0,
+   "nunique": 368250,
+   "samples": [
+    "453297",
+    "24887",
+    "453297",
+    "453297",
+    "479"
+   ]
+  },
+  "DeviceName": {
+   "null_ratio": 0.0,
+   "nunique": 114541,
+   "samples": [
+    "153085",
+    "153085",
+    "153085",
+    "153085",
+    "153085"
+   ]
+  },
+  "NetworkMessageId": {
+   "null_ratio": 0.0,
+   "nunique": 375196,
+   "samples": [
+    "529644",
+    "529644",
+    "529644",
+    "529644",
+    "529644"
+   ]
+  },
+  "EmailClusterId": {
+   "null_ratio": 0.9898,
+   "nunique": 26474,
+   "samples": [
+    "4199608410.0",
+    "3427528853.0",
+    "3169483085.0",
+    "2936264920.0",
+    "2820862377.0"
+   ]
+  },
+  "RegistryKey": {
+   "null_ratio": 0.0,
+   "nunique": 1341,
+   "samples": [
+    "1631",
+    "1631",
+    "1631",
+    "1631",
+    "1631"
+   ]
+  },
+  "RegistryValueName": {
+   "null_ratio": 0.0,
+   "nunique": 525,
+   "samples": [
+    "635",
+    "635",
+    "635",
+    "635",
+    "635"
+   ]
+  },
+  "RegistryValueData": {
+   "null_ratio": 0.0,
+   "nunique": 699,
+   "samples": [
+    "860",
+    "860",
+    "860",
+    "860",
+    "860"
+   ]
+  },
+  "ApplicationId": {
+   "null_ratio": 0.0,
+   "nunique": 1728,
+   "samples": [
+    "2251",
+    "2251",
+    "2251",
+    "2251",
+    "2251"
+   ]
+  },
+  "ApplicationName": {
+   "null_ratio": 0.0,
+   "nunique": 2681,
+   "samples": [
+    "3421",
+    "3421",
+    "3421",
+    "3421",
+    "3421"
+   ]
+  },
+  "OAuthApplicationId": {
+   "null_ratio": 0.0,
+   "nunique": 703,
+   "samples": [
+    "881",
+    "881",
+    "881",
+    "881",
+    "881"
+   ]
+  },
+  "ThreatFamily": {
+   "null_ratio": 0.9921,
+   "nunique": 1745,
+   "samples": [
+    "CymRan",
+    "CVE-2017-11882",
+    "Masqshell",
+    "Multiverze",
+    "Babonock"
+   ]
+  },
+  "FileName": {
+   "null_ratio": 0.0,
+   "nunique": 222085,
+   "samples": [
+    "289573",
+    "289573",
+    "289573",
+    "289573",
+    "289573"
+   ]
+  },
+  "FolderPath": {
+   "null_ratio": 0.0,
+   "nunique": 87832,
+   "samples": [
+    "117668",
+    "117668",
+    "117668",
+    "117668",
+    "117668"
+   ]
+  },
+  "ResourceIdName": {
+   "null_ratio": 0.0,
+   "nunique": 2309,
+   "samples": [
+    "3586",
+    "3586",
+    "3586",
+    "3586",
+    "3586"
+   ]
+  },
+  "ResourceType": {
+   "null_ratio": 0.9993,
+   "nunique": 25,
+   "samples": [
+    "Virtual Machine",
+    "API Management Service",
+    "Networking",
+    "Azure Resource",
+    "Azure Arc machine"
+   ]
+  },
+  "Roles": {
+   "null_ratio": 0.9771,
+   "nunique": 10,
+   "samples": [
+    "Contextual",
+    "Contextual",
+    "Destination",
+    "Attacker",
+    "Contextual"
+   ]
+  },
+  "OSFamily": {
+   "null_ratio": 0.0,
+   "nunique": 6,
+   "samples": [
+    "5",
+    "5",
+    "5",
+    "5",
+    "5"
+   ]
+  },
+  "OSVersion": {
+   "null_ratio": 0.0,
+   "nunique": 58,
+   "samples": [
+    "66",
+    "66",
+    "66",
+    "66",
+    "66"
+   ]
+  },
+  "AntispamDirection": {
+   "null_ratio": 0.9814,
+   "nunique": 5,
+   "samples": [
+    "Inbound",
+    "Intraorg",
+    "Inbound",
+    "Inbound",
+    "Inbound"
+   ]
+  },
+  "SuspicionLevel": {
+   "null_ratio": 0.8483,
+   "nunique": 2,
+   "samples": [
+    "Suspicious",
+    "Suspicious",
+    "Suspicious",
+    "Suspicious",
+    "Suspicious"
+   ]
+  },
+  "LastVerdict": {
+   "null_ratio": 0.7652,
+   "nunique": 5,
+   "samples": [
+    "Suspicious",
+    "Suspicious",
+    "Suspicious",
+    "Suspicious",
+    "Suspicious"
+   ]
+  },
+  "CountryCode": {
+   "null_ratio": 0.0,
+   "nunique": 236,
+   "samples": [
+    "31",
+    "242",
+    "242",
+    "242",
+    "242"
+   ]
+  },
+  "State": {
+   "null_ratio": 0.0,
+   "nunique": 1368,
+   "samples": [
+    "6",
+    "1445",
+    "1445",
+    "1445",
+    "1445"
+   ]
+  },
+  "City": {
+   "null_ratio": 0.0,
+   "nunique": 9342,
+   "samples": [
+    "3",
+    "10630",
+    "10630",
+    "10630",
+    "10630"
+   ]
+  }
+ }
+}

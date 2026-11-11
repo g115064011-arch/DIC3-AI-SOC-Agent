@@ -1,0 +1,26 @@
+# Data
+data/raw/
+data/processed/
+data/archive/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Node / OpenSpec local artifacts
+node_modules/
+npm-debug.log*
+
+# Secrets & Environment
+.env
+powershell.cmd
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 參考文獻全文（僅本機閱讀用，不上傳）
+docs/papers/
