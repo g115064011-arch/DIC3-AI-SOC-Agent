@@ -16,7 +16,7 @@
 8. [Flowchart](#8-flowchart)
 9. [Algorithm (Pseudocode)](#9-algorithm-pseudocode)
 10. [Evaluation Plan](#10-evaluation-plan)
-11. [Implementation Mapping](#11-implementation-mapping)
+11. [Implementation & OpenSpec Mapping](#11-implementation--openspec-mapping)
 12. [How to Run](#12-how-to-run)
 13. [Results](#13-results)
 14. [Limitations & Risks](#14-limitations--risks)
@@ -335,7 +335,9 @@ Output: label, confidence conf, flag set flags
 | E5 成本 | 實務可行性 | E1 / E3 | — | 每事件 token 數、延遲、工具呼叫次數 |
 | Ablation | 各模組貢獻 | GUIDE | 分別移除 ⑤、⑥ 或升級規則 | 同 E1 |
 
-## 11. Implementation Mapping
+## 11. Implementation & OpenSpec Mapping
+
+### 11.1 Code Structure Mapping（目錄與模組對應）
 
 （規劃）目錄與模組對應：
 
@@ -350,6 +352,28 @@ Output: label, confidence conf, flag set flags
 | ⑧ Output | `src/soc_agent/report.py`、`app/dashboard.py` |
 | 資料檢查（已完成） | `experiments/e0_profile_guide.py` |
 | 實驗 | `experiments/e1_triage.py` … `e5_cost.py` |
+
+### 11.2 OpenSpec Mapping（架構 ↔ 規格 ↔ 需求 ↔ 任務對應表）
+
+本專案全面導入規格驅動開發（Spec-Driven Development），以 `openspec/changes/refactor-ai-soc-agent-proposal/` 作為 Active Change 進行系統規格管控。以下為系統架構各模組與 OpenSpec Capabilities、Requirements 及 Implementation Tasks 的全景對應矩陣：
+
+| DESIGN.md 架構模組與章節 | OpenSpec Capability | Specification Requirement (RFC 2119) | Implementation Task (`tasks.md`) | 當前狀態 (Status) |
+|---|---|---|---|---|
+| **② Query / Input** & **§5 Data** | `incident-triage` | Incident Ingestion and Schema Validation | `1.1` GUIDE dataset exploratory profiling script | **Already Implemented** |
+| **② Query / Input** (Schema) | `incident-triage` | Incident Ingestion and Schema Validation | `1.2` Canonical incident ingestion pipeline and schema validation | Planned |
+| **⑤ Analytics Engine** (Classifier) | `incident-triage` | Multi-Class Incident Triage Prediction | `2.1` Train and evaluate GBDT multi-class triage classifier | Planned |
+| **⑤ Analytics Engine** (SHAP) | `explainability-reporting` | Local Feature Attribution via TreeSHAP | `2.2` Implement TreeSHAP local feature explanation engine | Planned |
+| **④ Data Acquisition / Retrieval** | `evidence-retrieval` | Multi-Hop Evidence Acquisition | `3.1` Build DuckDB incident evidence store and SQL log query tool | Planned |
+| **③ Planner & Reasoning Agent** | `evidence-retrieval` | Query Budget and Termination Control | `3.2` Implement ReAct planner with budget limits and Assume Breach check | Planned |
+| **③ Planner & Reasoning Agent** | `evidence-retrieval` | Incomplete Log Detection under Assume Breach | `3.2` Implement ReAct planner with budget limits and Assume Breach check | Planned |
+| **⑥ Domain Knowledge** (ATT&CK) | `domain-knowledge-reasoning` | MITRE ATT&CK Semantic Retrieval | `4.1` Construct Chroma vector store for MITRE ATT&CK STIX 2.1 knowledge | Planned |
+| **⑥ Domain Knowledge** (Rules R1–R5) | `domain-knowledge-reasoning` | Cyber Kill Chain Tactical Progression Mapping | `4.2` Implement Cyber Kill Chain tactical risk rule engine | Planned |
+| **⑥ Domain Knowledge** (Playbooks) | `domain-knowledge-reasoning` | Incident Response Playbook Alignment | `4.3` Integrate NIST SP 800-61 Rev. 3 incident response playbooks | Planned |
+| **⑦ Decision / Recommendation** (Fusion) | `risk-escalation` | Evidence Fusion and Multi-Modal Decision Synthesis | `5.1` Implement evidence fusion algorithm (Algorithm 2) | Planned |
+| **⑦ Decision / Recommendation** (Escalation) | `risk-escalation` | Automated Human-in-the-Loop Escalation Policy | `5.2` Implement automated human escalation and conflict detection policy | Planned |
+| **⑦ Decision / Recommendation** (Conflict) | `risk-escalation` | Conflict Detection and Dispute Annotation | `5.2` Implement automated human escalation and conflict detection policy | Planned |
+| **⑧ Output & Interaction** (Reports) | `explainability-reporting` | Structured Audit Evidence Report Generation | `6.1` Implement dual-format structured audit report generator | Planned |
+| **⑧ Output & Interaction** (UI & Feedback) | `explainability-reporting` | Analyst Feedback Ingestion and Policy Fine-Tuning | `6.2` Develop Streamlit analyst dashboard and feedback logging mechanism | Planned |
 
 ## 12. How to Run
 

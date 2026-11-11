@@ -1,32 +1,39 @@
 schema: spec-driven
 
-# Project context (optional)
-# Add only constraints that should guide OpenSpec artifacts and workflows.
-# Include constraints an agent cannot infer by reading the code.
-# Keep general project documentation and discoverable codebase facts out.
-# Example:
-#   context: |
-#     Designs and tasks must cover Windows, macOS, and Linux
-#     Write all artifacts in Spanish
+# Project context
+context: |
+  Project: AI SOC Analyst Agent (DIC3 Proposal Refactor)
+  Domain: Security Operations Center (SOC) Alert Triage, Cyber Threat Investigation, MITRE ATT&CK Reasoning
+  Architecture: Eight-module domain agent (① User -> ② Input -> ③ Planner -> ④ Retrieval -> ⑤ Analytics -> ⑥ Domain Knowledge -> ⑦ Decision -> ⑧ Output)
+  Tech Stack: Python 3.14, DuckDB, LightGBM/XGBoost, TreeSHAP, Chroma Vector DB, LLM Tool-Use (ReAct), Streamlit
+  Datasets: Microsoft GUIDE (1M incidents, 6.1k orgs, Kaggle CDLA-2.0), ExCyTIn-Bench (57 log tables, 8 attack chains, ICML 2026), MITRE ATT&CK STIX 2.1
+  Standards: RFC 2119 (SHALL, MUST), NIST SP 800-61 Rev. 3, MITRE D3FEND
+  Naming Conventions: Kebab-case capabilities (incident-triage, evidence-retrieval, domain-knowledge-reasoning, risk-escalation, explainability-reporting), PascalCase schemas (TriageRequest, TriageReport)
+  Core Constraints:
+    - Never archive until full implementation is verified; changes stay active during proposal phase.
+    - Expected outcomes only in proposal phase; no fabricated empirical results.
+    - Ground decisions in Assume Breach, Attack Chain Context, and Asymmetric Error Cost.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always state what is out of scope
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+# Per-artifact rules
+rules:
+  proposal:
+    - "Ground all motivation in verified 2025-2026 sources and official telemetry"
+    - "Explicitly state research gaps and expected outcomes"
+  specs:
+    - "Every requirement MUST contain SHALL or MUST keywords"
+    - "Every requirement MUST have at least one testable Scenario with WHEN and THEN"
+  design:
+    - "Must specify mapping to architecture modules ① through ⑧"
+    - "Must include Mermaid flowchart and pseudocode for algorithms"
+  tasks:
+    - "Must track status: Already Implemented, Planned, or Not Yet Implemented"
+    - "Only experiments/e0_profile_guide.py is Already Implemented; all others must be Planned"
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+# Per-operation guidance
+operations:
+  apply:
+    guidance:
+      - "Only implement tasks marked for current cycle; adhere strictly to capability specs"
+  archive:
+    guidance:
+      - "Do not archive during proposal refactor phase; archive only when implementation and evaluation pass all tests"
