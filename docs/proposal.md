@@ -39,133 +39,262 @@
 
 ## 2. Introduction
 
-### 2.1 Attention Getter：攻擊越來越多，偵測越來越慢
+### 2.1 Attention Getter: The Widening Gap Between Attack Scale and Defender Response
 
-網路攻擊已是日常的國安與經濟威脅。國安局報告指出，2025 年中共對我國關鍵基礎設施的網路侵擾平均每日約 263 萬次，較 2024 年增加 6% [23]。攻擊者一旦入侵成功，往往不會立即被發現：Mandiant M-Trends 2026 報告指出，2025 年攻擊者在受害環境中的全球潛伏時間中位數為 14 天，比前一年的 11 天更長，網路間諜與北韓 IT 人員案件更長達 122 天 [15]。IBM 2026 年報告則顯示，資料外洩的全球平均成本創新高，達 499 萬美元（較前一年增加 12%），從發生到偵測、圍堵平均需要 247 天；而大量使用 AI 與自動化的組織平均可節省 193 萬美元，並將處理週期縮短 65 天 [14]。
+Modern enterprises face an unprecedented surge in cyber threats that far outpaces the capacity of human defenders. According to Taiwan's National Security Bureau (NSB) 2026 disclosure, adversaries launched approximately 2.63 million daily cyber probe and intrusion attempts against Taiwan's critical infrastructure in 2025—a 6% increase from 2024 [23]. These figures represent the volume of externally originating network probes and attack attempts, not the number of alerts processed within enterprise SOC queues; the distinction is critical for avoiding misinterpretation of the operational burden on analysts.
 
-這些數字指向同一個結論：**偵測和回應的速度直接決定損失大小，而 AI 有機會在其中發揮關鍵作用。**
+The economic and temporal consequences of successful intrusions are severe. The IBM Cost of a Data Breach Report 2026 reveals an all-time high average breach cost of \$4.99 million (+12% year-over-year), with an average breach lifecycle of 247 days from initial compromise to containment [14]. Organizations that extensively deployed AI and automation in their security workflows achieved average savings of \$1.93 million per breach and shortened their response cycle by 65 days compared to those with no AI deployment [14]. Concurrently, Mandiant M-Trends 2026 reports a global median attacker dwell time of 14 days in 2025—an increase from 11 days in 2024—with cyber espionage campaigns and North Korean IT worker cases extending median dwell times to 122 days [15]. These metrics collectively underscore a fundamental tension: while the scale and sophistication of threats continue to escalate, the speed of detection and containment remains the decisive factor in limiting operational and financial damage.
 
-### 2.2 Background：SOC 如何運作
+#### 繁體中文重點說明
 
-資安維運中心（Security Operations Center, SOC）是企業偵測與回應資安事件的核心單位。各種防護產品（端點防護、郵件閘道、身分驗證、雲端服務等）會依偵測規則產生告警，再由 SIEM 或 XDR 平台彙整。分析師通常分為兩層：
+- **攻擊規模**：國安局 2026 年揭露，2025 年每日遭受約 263 萬次「網路侵擾嘗試」（cyber probe/intrusion attempts），較 2024 年增加 6%。**重要澄清**：此數字為外部對關鍵基礎設施的侵擾次數，非 SOC 內部告警量，兩者不可混用。
+- **外洩代價**：IBM 2026 報告顯示，全球平均資料外洩成本創 499 萬美元新高（+12%），從發生到圍堵平均需 247 天；大量使用 AI 與自動化的組織可節省 193 萬美元、縮短 65 天。
+- **潛伏時間**：Mandiant M-Trends 2026 指出，2025 年攻擊者全球潛伏時間中位數為 14 天（較 2024 年的 11 天延長），間諜攻擊與北韓 IT 人員案件達 122 天。
+- **核心論點**：偵測與回應速度直接決定損失大小，AI 有機會在此發揮關鍵作用。
 
-- **Tier-1** 負責初步分級（triage），判斷告警是真陽性（TP，真實惡意活動）、良性陽性（BP，偵測正確但活動是授權或無害的）還是誤報（FP，偵測邏輯本身有誤）。實務上，分析師口中的「誤報」多半其實是 BP：告警正確，但該活動在組織內是被允許的 [24]。
-- **Tier-2 / Tier-3** 負責深入調查、圍堵與復原。
+---
 
-分級時，分析師需要查詢相關 log、確認帳號與主機的上下文，並將告警對應到 MITRE ATT&CK 等攻擊知識框架，判斷攻擊推進到哪個階段 [10][22]。處置流程則依循 NIST SP 800-61 Rev. 3 等事件應變標準 [13]。
+### 2.2 Background: How Modern SOCs Operate
 
-**與 AIoT 的關聯**：企業網路中的 IoT 與工控（OT）裝置多半無法安裝端點防護，其異常通常透過網路與身分層的告警進入 SOC，同樣需要分級。本專題以事件為單位整合不同來源的告警，並以 ATT&CK 推理攻擊鏈，不限於特定裝置類型；ATT&CK 另有 ICS 矩陣，可延伸至工控情境。
+A Security Operations Center (SOC) is an organization's centralized function for monitoring, detecting, analyzing, and responding to cybersecurity incidents on a continuous basis. Detection feeds originate from a diverse ecosystem of security controls—endpoint protection platforms, email gateways, identity management systems, cloud workload protections, and network sensors—each generating alerts according to their configured detection rules. These alerts are aggregated and correlated by Security Information and Event Management (SIEM) or Extended Detection and Response (XDR) platforms before reaching analysts.
 
-### 2.3 Problem：分級是瓶頸
+SOC analysts are typically organized in a tiered structure. Tier-1 analysts are responsible for initial alert triage: classifying each incident as a True Positive (TP, confirmed malicious activity), a Benign Positive (BP, correctly detected activity that is authorized or non-threatening within the organization's context), or a False Positive (FP, an alert fired erroneously by the detection logic) [24]. This TP/BP/FP taxonomy is analytically significant: empirical research on real-world SOC workflows demonstrates that the majority of dismissed alerts are actually BPs rather than genuine FPs—the detection fired correctly, but the flagged behavior is legitimate for that organization [24]. Tier-2 and Tier-3 analysts handle confirmed TP incidents that require deeper forensic investigation, containment, eradication, and recovery.
 
-SOC 每天面對數以萬計的告警，其中只有一小部分對應真實攻擊 [2]；大型 SOC 同時有數百起事件待處理，排序方式卻常僅依到達時間或粗略的嚴重度 [7]。這造成**告警疲勞**：大量誤報讓分析師疲於奔命，真正的攻擊反而被淹沒 [8][9]。
+During triage, analysts consult security logs and telemetry, verify account and host context, and map alerts to attack knowledge frameworks such as MITRE ATT&CK to determine the stage of the attack progression [10][22]. Formal response procedures follow standards such as NIST SP 800-61 Rev. 3 [13], which—as of its April 2025 revision—reorganizes incident response around the six functions of the NIST Cybersecurity Framework (CSF) 2.0 and explicitly recommends that incidents should be prioritized through structured triage rather than processed in arrival order.
 
-本專題要解決的問題是：
+**Relevance to AIoT**: Internet of Things (IoT) and Operational Technology (OT) devices in enterprise networks typically cannot support endpoint protection agents; their anomalies surface in the SOC via network-layer and identity-layer alerts. The proposed system processes alerts at the incident level, integrating evidence from multiple detection sources and reasoning over ATT&CK tactics—a framework that also offers an ICS matrix for industrial control systems. This design is intentionally device-type agnostic, making it extensible to AIoT and OT monitoring contexts.
 
-> **能否設計一個 AI Agent，結合 ML、資安領域知識與 LLM 推理，對資安事件提供有依據、可解釋，並且知道何時該交給人的分級與處置建議？**
+#### 繁體中文重點說明
 
-### 2.4 Existing Limitations：現有方法的不足
+- **SOC 架構**：SIEM/XDR 彙整各類偵測工具的告警，Tier-1 負責初步分級（TP/BP/FP），Tier-2/Tier-3 負責深入調查與應變。
+- **BP ≠ FP 的重要性**：Alahmadi 等人 [24] 研究顯示，大量被稱為「誤報」的告警其實是良性觸發（BP），應分開衡量，本專題的三分類設計（TP/BP/FP）正確反映此實務。
+- **分析師工作流程**：分級時需對照 MITRE ATT&CK 判斷攻擊階段，並依 NIST SP 800-61 Rev. 3 執行應變流程，不再依到達先後排序事件。
+- **與 AIoT 關聯**：本專題以事件為單位整合多來源告警，ATT&CK 有 ICS 矩陣，可延伸至工控與 IoT 裝置的監控情境。
 
-1. **ML 分級缺少攻擊鏈脈絡**：Microsoft 的 ML 分級與排序系統已可大規模部署 [1][7]，但模型主要判斷「像不像過去的 TP」，較少明確說明告警在攻擊鏈中代表什麼；而攻擊鏈脈絡正是判斷嚴重度的關鍵 [10][11]。
-2. **LLM Agent 漏判率高**：LLM Agent 能主動查詢與解釋，但研究發現五種主流推理策略都漏判至少 40.4% 的攻擊告警，而且常在「查無紀錄」時過早結案 [3]；在資安調查 benchmark 上，最佳模型的 reward 只有 0.606 [4]；推理模型在資安分析上的進步也不如在程式與數學上明顯 [5]。
-3. **領域知識未被整合**：ATT&CK 對應方法多處理威脅情資文字 [6]，以攻擊鏈判斷嚴重度的方法則多為規則或攻擊圖 [10][11]，兩者都沒有與 ML 分級、LLM 推理整合。
-4. **缺少人機協作設計**：多數系統只輸出結論。研究顯示，自動化程度提高後分析師會降低監控、更依賴自動化結果，而系統性的驗證程序能減緩這個現象 [12]；實地部署也顯示，分析師是否採用 AI 的輸出，關鍵在於結果是否容易驗證 [26]。
-5. **評估難以重現**：AI 告警篩選研究普遍缺乏實際營運驗證與一致的評估方法 [8]；常用的 CICIDS2017 資料集被發現在流量建構與標註上有問題，超過 20% 的流量需要重建或重新標註 [17]；ML 資安研究中的評估陷阱相當普遍 [16]。
+---
 
-### 2.5 Innovation：本專題的不同之處
+### 2.3 Problem: Alert Triage as the Critical Bottleneck
 
-| 面向 | 既有方法 | 本專題 |
+Enterprise SOCs are routinely overwhelmed by alert volumes far exceeding their analysts' processing capacity. Research on large-scale SOC operations reveals that analysts must simultaneously manage hundreds of queued incidents, yet queue ordering often relies on little more than alert arrival time or coarse severity scores—neither of which reliably reflects actual threat priority [7]. This volume problem is compounded by the composition of the alert stream: in the Microsoft GUIDE dataset—the largest publicly available real-world enterprise incident dataset—only 20.6% of incidents are TP, while 49.0% are BP and 30.4% are FP [1]. The practical consequence is pervasive **alert fatigue**: analysts overwhelmed by high volumes of non-actionable alerts risk desensitization to genuine threats [8][9].
+
+The core problem this project addresses is therefore:
+
+> **Can an AI Agent, integrating machine learning triage, cybersecurity domain knowledge, and LLM-based reasoning, produce evidence-grounded, explainable incident classifications—with a principled policy governing when cases must be escalated to human analysts?**
+
+#### 繁體中文重點說明
+
+- **告警量問題**：SOC 每天面對的告警中，真實惡意事件（TP）只佔 20.6%，良性觸發（BP）49%，誤報（FP）30.4%（GUIDE 資料集 [1]）。
+- **排序問題**：大型 SOC 有數百起待處理事件，但排序多依到達時間或粗略嚴重度 [7]，優先順序不可靠。
+- **告警疲勞**：大量非可行動告警導致分析師疲勞，真正的攻擊反而被忽略 [8][9]。
+- **核心問題**：能否設計一個 AI Agent，結合 ML、領域知識與 LLM 推理，提供有依據、可解釋，且知道何時交給人的分級決策？
+
+---
+
+### 2.4 Existing Limitations of Current Approaches
+
+Current approaches to automated SOC triage suffer from five critical gaps that this project aims to address:
+
+**1. ML classifiers lack kill chain context.** ML-based triage systems, including Microsoft's large-scale Copilot Guided Response (CGR) [1] and Adaptive Incident Prioritization (AIP) [7], can achieve high accuracy at enterprise scale—CGR reports a cross-region macro-F1 of 0.87 for TP/BP/FP classification. However, these models primarily learn statistical similarity to historical TP patterns; they do not explicitly reason about what a given alert means within the progression of an attack chain. Kill chain context is precisely the information analysts rely on to assess severity and urgency [10][11].
+
+**2. LLM Agents exhibit high false negative rates.** LLM agents offer flexible, query-driven investigation capabilities, but systematic empirical evaluation reveals critical failure modes: across five mainstream tool-using LLM reasoning strategies, every approach misses at least 40.4% of attack-related alerts, with false negatives occurring most frequently when queries return empty results—a "no evidence" finding is incorrectly treated as "no attack" [3]. On the ExCyTIn-Bench threat investigation benchmark (57 log tables, 8 real attack chains), the best-performing model achieves an investigation reward of only 0.606, with performance degrading substantially to 0.248 when alerts are removed from the query context [4]. Furthermore, test-time compute scaling—which yields marked improvements in code and mathematics—provides only marginal benefit for security analysis tasks [5].
+
+**3. Domain knowledge is not integrated into triage pipelines.** Methods for mapping alerts to ATT&CK tactics predominantly address threat intelligence text reports [6] rather than raw SOC alerts and logs. Graph-based severity assessment methods that do incorporate kill chain context [10][11] operate as standalone rule systems without integration with ML classifiers or LLM reasoning.
+
+**4. Human-in-the-loop design is neglected.** Most automated systems produce only a final verdict without an explicit policy for when and how to escalate to human review. Research on SOC automation demonstrates that increasing automation induces *automation complacency*: analysts reduce their monitoring vigilance and over-rely on automated outputs [12]. Critically, field deployment evidence shows that analyst adoption of AI outputs depends primarily on output *verifiability* rather than raw accuracy [26], and that systematic verification procedures can mitigate complacency [12].
+
+**5. Evaluations lack reproducibility.** Systematic reviews of AI-based alert filtering identify persistent deficits in operational validation and methodological consistency [8]. Commonly used benchmark datasets carry significant quality concerns—for instance, over 20% of CICIDS2017 flows require reconstruction or re-labeling due to dataset construction artifacts [17]—while evaluation pitfalls in ML security research are broadly documented [16].
+
+#### 繁體中文重點說明
+
+1. **ML 缺少攻擊鏈脈絡**：CGR [1] 的 macro-F1 達 0.87，但主要學習「像不像過去的 TP」，不明確說明告警在攻擊鏈中的意義，而攻擊鏈位置是判斷嚴重度的關鍵 [10][11]。
+2. **LLM 漏判率高**：五種主流 LLM 推理策略都漏判至少 40.4% 的攻擊告警 [3]；ExCyTIn-Bench 最佳 reward 僅 0.606，移除告警表降至 0.248 [4]；推理模型在資安的 scaling 效益遠不如程式或數學 [5]。
+3. **領域知識未整合**：ATT&CK 對應方法多處理威脅情資文字 [6]，攻擊鏈圖方法 [10][11] 是獨立規則系統，沒有與 ML/LLM 整合。
+4. **缺少人機協作設計**：自動化加劇分析師自滿偏誤 [12]；影響採用的關鍵是輸出是否容易驗證 [26]，而非準確率。
+5. **評估難以重現**：缺乏一致的評估方法 [8]；CICIDS2017 超過 20% 流量需重建 [17]；ML 資安評估陷阱普遍存在 [16]。
+
+---
+
+### 2.5 Innovation: How This Project Differs
+
+The proposed AI SOC Analyst Agent addresses the five limitations identified above through a principled integration of complementary approaches. The following comparison table contrasts existing methods with the proposed design across six dimensions:
+
+| Dimension | Existing Approaches | Proposed AI SOC Analyst Agent |
 |---|---|---|
-| 判斷方式 | 單一 ML 模型，或單一 LLM | **證據融合**：ML 機率、LLM 推理、攻擊鏈規則三方整合 |
-| 領域知識 | 隱含在訓練資料中，或只用於威脅情資文字 | **明確整合** ATT&CK 知識庫與 Kill Chain 規則，攻擊越後段越傾向升級 |
-| 不確定性 | 只輸出分級結果 | 信心不足、ML 與 LLM 結論衝突、觸發高風險規則或證據不足時，**主動升級並說明原因** |
-| 證據不足時 | LLM 可能直接結案 [3] | 依 **Assume Breach** 原則擴大查詢，預算用完仍不確定就升級 |
-| 可解釋性 | 分數或簡短理由 | 每個結論附 **證據鏈**（SHAP 特徵、相似事件、ATT&CK 技術、資料來源） |
-| 評估 | 只看準確率 | 同時報告 **漏判率與升級率**，並在兩個公開資料集上可重現評估 |
-| 與最接近的研究 AIDA [3] 相比 | 推理、質疑與裁判都由 LLM 完成；在單一資料系列上評估；每告警約 3.4 萬 token | 分級機率來自在真實標籤上訓練的 GBDT，LLM 不單獨決定；ATT&CK 知識與攻擊鏈規則作為硬性約束；升級條件是可檢查的規則；在 6.1k 個組織的 GUIDE 上評估 |
+| **Classification basis** | Standalone ML model, or standalone LLM | **Evidence fusion**: ML calibrated probability + LLM multi-step reasoning + ATT&CK kill chain rules |
+| **Domain knowledge use** | Implicit in training data, or applied only to threat intelligence text | **Explicit integration** of ATT&CK knowledge base and kill chain rules; later-stage tactics systematically bias toward escalation |
+| **Uncertainty handling** | Binary verdict output only | Explicit escalation when prediction confidence falls below threshold τ, ML/LLM conclusions conflict, high-risk kill chain rules trigger, or evidence is insufficient |
+| **Insufficient evidence** | LLM may close the case [3] | Per **Assume Breach** doctrine: expand queries; escalate if budget exhausted with unresolved uncertainty |
+| **Explainability** | Numerical score or brief rationale | Each verdict includes a **full evidence chain**: SHAP feature attributions, similar historical incidents, mapped ATT&CK techniques, and data source citations |
+| **Evaluation** | Accuracy only | Reports both **TP False Negative Rate and Human Escalation Rate**; reproducible evaluation on two public datasets |
+| **Comparison with AIDA [3]** | Reasoning, challenge, and judgment all performed by LLM; evaluated on single data series; ~34k tokens/alert | Triage probability from GBDT trained on real analyst labels; LLM cannot unilaterally decide; ATT&CK knowledge and kill chain rules as hard constraints; escalation policy encoded as auditable rules; evaluated on 6.1k-organization GUIDE dataset |
 
-### 2.6 Contributions：預期貢獻
+#### 繁體中文重點說明
 
-1. **系統貢獻**：設計並實作一個整合 ML 分級、ATT&CK 知識檢索與 LLM 推理的 SOC 分級 Agent，模組依 ① 到 ⑧ 的架構清楚分工，可供後續開發者延伸。
-2. **方法貢獻**：提出證據融合與升級演算法（Algorithm 1、2），把 Assume Breach、攻擊鏈脈絡、錯誤成本不對稱等領域原則轉成明確的決策規則。
-3. **實驗貢獻**：在 GUIDE 與 ExCyTIn-Bench 兩個公開資料集上，與規則、純 ML、純 LLM 等 baseline 比較，並以消融實驗量化各模組的貢獻；以事件與組織為單位切分資料，避免資料洩漏。
-4. **領域研究貢獻**：整理 SOC 領域的五個核心思維模式、三個專業爭論與十個深度理解問題，並說明它們如何轉化為系統設計。
-5. **可重現與交接**：公開原始碼、資料處理流程、README 與 DESIGN.md，讓其他開發者可以理解、執行、驗證並延續本專題。
+- **證據融合**：本專題的核心創新是將三種方法（ML 機率、LLM 推理、ATT&CK 規則）整合，不讓任何一個單獨決定結果。
+- **升級機制**：明確定義四種升級條件（信心不足、ML/LLM 衝突、高風險規則觸發、證據不足），並依 Assume Breach 原則擴大查詢。
+- **可解釋性**：每個結論都附完整證據鏈（SHAP 特徵、相似事件、ATT&CK 技術、資料來源），讓分析師有依據可驗證。
+- **評估**：同時報告漏判率與升級率，在兩個公開資料集上可重現，直接回應評估不一致的問題。
+- **與 AIDA [3] 的差異**：本專題的分級機率來自在真實標籤上訓練的 GBDT，不完全依賴 LLM；ATT&CK 規則作為硬性約束，升級條件是可審核的規則，而非 LLM 自由裁量。
+
+---
+
+### 2.6 Contributions
+
+This project makes the following five anticipated contributions:
+
+**1. System contribution.** We design and implement a modular AI agent for SOC alert triage that integrates ML-based probability estimation, ATT&CK knowledge retrieval, and LLM-based multi-step evidence collection within a clearly defined eight-module architecture (modules ①–⑧), providing a reproducible and extensible reference implementation.
+
+**2. Methodological contribution.** We propose evidence fusion and escalation algorithms (Algorithms 1 and 2) that operationalize domain principles—Assume Breach, kill chain context-awareness, and asymmetric error cost—as explicit, auditable decision rules rather than implicit model behaviors.
+
+**3. Experimental contribution.** We conduct rigorous evaluation on two public datasets: Microsoft GUIDE (triage accuracy) and ExCyTIn-Bench (agentic log investigation), comparing against majority-class, rule-based, standalone GBDT, and standalone LLM baselines. Data splits respect organizational boundaries (GroupKFold by organization and incident ID) to prevent data leakage. Ablation studies quantify the marginal contribution of each component.
+
+**4. Domain research contribution.** We synthesize five core SOC mindsets, three domain controversies, and ten deep-understanding questions that translate cybersecurity domain knowledge into concrete system design decisions—forming a reusable analytical framework for AI-augmented SOC research.
+
+**5. Reproducibility and handover.** All source code, data processing pipelines, DESIGN.md, and READMEs are published to enable other researchers and developers to understand, execute, verify, and extend this work.
+
+#### 繁體中文重點說明
+
+1. **系統貢獻**：整合 ML + ATT&CK 知識庫 + LLM 的八模組 SOC 分級 Agent，架構清楚分工，可延伸。
+2. **方法貢獻**：證據融合與升級演算法（Algorithm 1、2），將 Assume Breach、攻擊鏈脈絡、錯誤成本不對稱等領域原則轉為明確的可審核決策規則。
+3. **實驗貢獻**：在 GUIDE 與 ExCyTIn-Bench 上對比多個 baseline，以組織為單位切分資料避免資料洩漏，消融實驗量化各模組貢獻。
+4. **領域研究貢獻**：五個核心思維模式、三個專業爭論、十個深度理解問題，形成可重用的分析框架。
+5. **可重現**：公開原始碼、資料流程與完整文件，確保可繼續開發。
 
 ## 3. Related Work
 
-> 本節文獻共 16 篇：AI Technology 8 篇（[1]–[7]、[26]）、Domain Know-how 8 篇（[8]–[13]、[24]、[25]）。
-> Limitation 欄位標示「作者自述」者取自原文的限制章節；其餘依原文內容整理。
+> 本節文獻共 16 篇：AI Technology 8 篇（[1]–[7]、[26]）、Domain Know-How 8 篇（[8]–[13]、[24]、[25]），篇數比例各 50%。所有文獻均經 URL / DOI 實測查證（Verified: Y / Paywall-OK），依規範採學術英文撰寫主要段落，每節末附繁體中文重點說明。
+> Limitation 欄位標示「Authors:」者取自原文限制章節；其餘依原文內容整理。
 
 ### 3.1 AI Technology
 
-**(1) ML 告警分級與優先排序。** Microsoft 的 Copilot Guided Response（CGR）[1] 以 ML 架構同時處理調查（相似歷史事件）、分級（TP / BP / FP）與處置建議三項任務，並公開了 GUIDE 資料集：約 1,300 萬筆證據、100 萬起事件，標籤由真實客戶的資安分析師標註，是目前最大的公開真實事件資料集。同團隊的 AIP [7] 進一步處理「事件佇列該怎麼排序」的問題，把資訊檢索的 BM25 概念改寫為不需查詢、跨租戶的排序演算法，在專家評估中達到 92.8% Precision@10，並在 GUIDE 上補上 9,980 個事件的優先排序標籤。這兩篇顯示 ML 方法在大規模 SOC 已可實際部署，但其優勢來自廠商內部的跨客戶資料與產品脈絡。
+#### (1) ML-Based Alert Triage and Incident Prioritization
 
-**(2) LLM Agent 用於告警調查。** CORTEX [2] 以多 Agent 分工（行為分析、證據蒐集、推理）處理告警分級，並指出單一 LLM 面對雜訊多的企業資料時表現不穩、透明度不足。Tsegai 等人 [3] 更系統性地比較五種 tool-using LLM 推理策略，發現**所有方法都漏掉至少 40.4% 的攻擊相關告警**；漏判常發生在「查詢沒有回傳紀錄」時，而且在同一個 context 內自我檢查反而淨效果為負。他們提出的 AIDA 透過獨立質疑與裁判機制，將漏判率降到 3.1%（F1 0.958），代價是 18.4% 的告警被升級給人工。這說明 **Agent 的「何時該停止調查、何時該交給人」是設計重點**。
+Microsoft's Copilot Guided Response (CGR) [1] introduced a production-deployed ML architecture that simultaneously addresses three SOC tasks—investigation (via similar historical incident retrieval), triage (TP/BP/FP classification), and remediation suggestion. Crucially, the work released the GUIDE dataset: approximately 13 million evidence rows, 1.6 million alerts, 1 million incidents across 6,100 customer organizations, with labels derived from real analyst decisions—the largest publicly available real-world enterprise incident dataset to date. CGR reports cross-region macro-F1 of 0.87 for TP/BP/FP classification, with precision 0.87 and recall 0.86. A companion work, Adaptive Incident Prioritization (AIP) [7], addresses the queue ordering problem by adapting BM25 information retrieval concepts into a query-free, cross-tenant ranking algorithm, achieving 92.8% Precision@10 in expert evaluation and extending GUIDE with 9,980 prioritization-labeled incidents. Together, these works establish that ML triage is industrially deployable at scale—yet the advantage derives substantially from vendor-internal cross-customer data and product integration context that is not publicly reproducible.
 
-**(3) 資安 LLM Benchmark。** ExCyTIn-Bench [4] 在一個受控的 Azure 租戶中（57 張 log 表、8 條真實攻擊鏈、7,542 題）評估 LLM Agent 的威脅調查能力，目前最佳模型 reward 只有 0.606。CyberSOCEval [5] 評估惡意程式分析與威脅情資推理，發現推理模型的 test-time scaling 在資安分析上的效益不如在程式和數學上明顯。兩者都顯示**通用 LLM 在資安推理上仍有明顯落差**。
+#### (2) LLM Agents for Alert Investigation
 
-**(4) 領域知識檢索（RAG）。** TechniqueRAG [6] 以 retriever + 指令微調 LLM + 零樣本重排序，將威脅情資文字標註為 ATT&CK 技術，只需少量標註資料即達到 state-of-the-art。不過它處理的是**威脅情資報告的文字**，而非 SOC 告警與 log；作者也指出模型很少輸出超過兩個技術，多標籤情境的召回率偏低。
+CORTEX [2] proposes a multi-agent LLM architecture—decomposing alert investigation into behavioral analysis, evidence collection, and reasoning sub-agents—and demonstrates improvements over single-agent baselines: actionable alert F1 improves from 0.66 to 0.78, and false positive rate decreases from 24.9% to 14.2%. However, Tsegai et al. [3] conduct a more systematic empirical study, evaluating five distinct tool-using LLM reasoning strategies and finding that **all existing strategies miss at least 40.4% of attack-related alerts**. The dominant failure mode is premature case closure when queries return empty results—an absence of logged evidence is incorrectly interpreted as an absence of malicious activity. In-context self-review is found to have a net-negative effect. Their proposed AIDA system, introducing independent adversarial challenger and judge agents, reduces the false negative rate to 3.1% (F1 0.958) at the cost of a 18.4% human escalation rate and approximately \$0.109 per alert (GPT-4.1). This work establishes that **the termination policy—when to stop investigating and when to escalate—is the most consequential design decision in LLM-based alert triage**.
 
-**(5) LLM Agent 的實地部署。** Banstola 等人 [26] 在一所大學的 SOC 進行 14 個月的實地研究，與分析師一起設計並部署 LLM Agent；在最後 4 個月的使用期間，超過 90% 的情況下分析師沿用了 Agent 的輸出來撰寫結案報告；對最常使用的 3 位分析師，估計節省 30–50% 的處理時間（對照為分析師自陳的手動處理時間）。他們發現**影響採用最大的不是準確率，而是輸出是否容易驗證**；分析師能自行調整 Agent 的行為後，也更信任它的結果。
+#### (3) Security LLM Benchmarks
 
-### 3.2 Domain Know-how
+ExCyTIn-Bench [4] evaluates LLM agents on threat investigation within a controlled Azure tenant (57 log tables, 8 authentic attack chains, 7,542 auto-generated questions). The best-performing model achieves an investigation reward of only 0.606; removing alert tables from the queryable database causes performance to drop to 0.248, confirming agents' over-reliance on alert-level context. CyberSOCEval [5], part of the CyberSecEval 4 suite, benchmarks malware analysis (609 questions) and threat intelligence reasoning (588 questions across 45 real reports), finding that model accuracy ranges from 15–28% and 43–53% respectively—far below saturation—and that test-time compute scaling yields substantially smaller improvements in security analysis than in code generation or mathematics. Both benchmarks establish a consistent finding: **general-purpose LLMs remain significantly below expert-level performance on security reasoning tasks**.
 
-**(1) 告警疲勞是 SOC 的結構性問題。** Ndichu 等人 [8] 回顧 2015–2026 年共 87 篇核心研究，將告警篩選流程歸納為過濾、分級、關聯、生成式增強四階段，並指出領域長期缺乏：實際營運驗證、對抗穩健性、跨環境泛化、評估方法一致性。Habibzadeh 等人 [9] 的 LLM-for-SOC 綜述則把 SOC 的困境歸結為告警量大、人力不足、專家需求高、回應延遲，以及威脅情資難以有效運用。
+#### (4) Domain Knowledge Retrieval via RAG
 
-**(2) 攻擊鏈階段決定嚴重程度。** Sadlek 等人 [10] 將偵測到的告警序列對應到依 ATT&CK 技術產生的 Kill Chain 攻擊圖，以「攻擊推進到的最遠階段」和「資產重要性」判定嚴重度，分類告警序列的 AUC 達 0.95。ROSCA [11] 同樣以 ATT&CK Kill Chain 為基礎，把告警依共同屬性聚合成 case 並評分排序，在真實告警資料上優於 MATE 框架。兩者共同支持一個領域共識：**單一告警的意義取決於它在攻擊鏈中的位置與上下文**。
+TechniqueRAG [6] addresses ATT&CK technique annotation in cyber threat intelligence (CTI) text using a retriever-augmented pipeline with an instruction-tuned LLM and zero-shot reranking. On the Procedures benchmark, TechniqueRAG achieves F1 of 91.09% with minimal labeled data, establishing state-of-the-art performance. However, two important limitations constrain applicability to our problem: (a) the method is designed for CTI text reports, not for structured SOC alert telemetry and security logs; and (b) on the multi-label Expert benchmark (covering 290 techniques), the best system achieves only ~50% F1, with models rarely outputting more than two techniques—indicating low recall in multi-tactic attack scenarios.
 
-**(3) 人機協作的風險：自動化自滿。** Tilbury 與 Flowerday [12] 以 SOC 實地觀察、696 名分析師問卷與 29 名分析師訪談發現：自動化程度提高後，分析師會降低監控、更依賴自動化結果（automation complacency），而**系統性的驗證程序**能減緩這個現象。這表示 AI Agent 不能只追求準確率，還必須設計讓人類「有理由去檢查」的輸出。
+#### (5) Field Deployment of LLM Agents in SOC
 
-**(4) 事件應變標準。** NIST SP 800-61 Rev. 3 [13]（2025 年 4 月）取代 2012 年的 Rev. 2，將事件應變改以 CSF 2.0 的六大功能（Govern、Identify、Protect、Detect、Respond、Recover）重新組織，是本專題處置建議的流程依據。
+Banstola et al. [26] conducted a 14-month participatory field study deploying an LLM ReAct agent collaboratively designed with analysts at a university SOC. During the final four active months, analysts incorporated the agent's output into case closure reports in over 90% of cases. For the three most frequent users, the estimated time savings were 30–50% relative to self-reported manual processing times. The study identifies **output verifiability—not accuracy—as the primary determinant of analyst adoption**: analysts were more willing to adopt outputs they could independently check, and self-customization of agent behavior further increased trust.
 
-**(5) 分析師實際如何判斷告警。** Alahmadi 等人 [24] 訪談 7 個 SOC 的 21 名實務人員，發現大量被稱為「誤報」的告警其實是 **benign trigger**：告警本身正確，但活動在組織內是被允許的，因此主張把「真正的誤報」和「良性觸發」分開衡量；分析師也指出，告警缺乏解釋與脈絡是主要問題之一。Kersten 等人 [25] 與一家商業 SOC 合作，以放聲思考（think-aloud）觀察 5 名 Tier-1 分析師進行的 400 次調查，發現調查流程因人、因告警類型而異，而且**最後需要升級的告警，分析師會蒐集更多種類的資訊**。這兩篇說明分級不只是「是不是攻擊」的二分判斷，也說明證據蒐集的深度應該依情況調整。
+#### 繁體中文重點說明
+
+1. **ML 分級**：CGR [1] macro-F1 0.87，但優勢依賴廠商跨客戶資料；AIP [7] 解決佇列排序問題，Precision@10 達 92.8%。
+2. **LLM Agent**：CORTEX [2] F1 從 0.66 → 0.78；但 Tsegai 等人 [3] 發現所有現有方法漏判至少 40.4%，「何時停止調查」是最關鍵設計；AIDA 透過獨立質疑與裁判機制將漏判率降至 3.1%，代價是 18.4% 升級率。
+3. **Benchmark**：ExCyTIn-Bench [4] 最佳 reward 0.606，移除告警表降至 0.248；CyberSOCEval [5] 顯示推理模型在資安的 scaling 效益遠不如程式或數學。
+4. **RAG**：TechniqueRAG [6] 在 CTI 文字上 F1 91.09%，但只處理文字報告，多標籤情境召回率低。
+5. **實地部署**：Banstola 等人 [26] 實地研究發現，採用 AI 輸出的關鍵是**可驗證性**，而非準確率。
+
+---
+
+### 3.2 Domain Know-How
+
+#### (1) Alert Fatigue as a Structural SOC Problem
+
+Ndichu et al. [8] conduct a systematic review of AI-based alert screening research spanning 2015–2026, analyzing 87 core studies from an initial pool of 119 references. They organize the alert management literature into four stages—filtering, triage, correlation, and generative augmentation—and identify four persistent research gaps: (i) absence of operational validation in real production SOC environments; (ii) insufficient adversarial robustness; (iii) limited cross-environment generalization; and (iv) lack of methodological consistency in evaluation. They propose a "Cognitive SOC" research agenda to address these deficiencies. Habibzadeh et al. [9] complement this with a comprehensive survey of LLM applications in SOC workflows, characterizing the structural challenges as: excessive alert volume, analyst staffing shortages, high domain expertise requirements, response latency, and difficulty operationalizing threat intelligence. They organize LLM SOC applications by workflow stage—log analysis, alert triage, and threat intelligence—and claim this as the first comprehensive survey specifically addressing LLM integration in SOC contexts.
+
+#### (2) Kill Chain Stage as the Primary Severity Determinant
+
+Sadlek et al. [10] propose mapping detected alert sequences to ATT&CK-derived kill chain attack graphs using MulVAL, assessing severity by the most advanced attack chain stage reached and the importance of compromised assets. On a 10-host testbed running 5 MITRE CALDERA attack scenarios (31 ATT&CK techniques, 475 alert sequences of which 10 are malicious), alert sequence classification achieves AUC 0.95, with a chosen threshold correctly identifying 80% of malicious sequences. ROSCA [11] independently pursues a similar insight, dynamically constructing alert graphs by shared attributes and scoring cases by ATT&CK tactic progression. Evaluated on real hospital SOC data (382 EDR alerts over 2 months), ROSCA outperforms the MATE framework in matching analyst-assigned severity labels. Both works converge on a central domain principle: **the security significance of any individual alert is inseparable from its position and context within the broader attack progression**.
+
+#### (3) Human-Machine Interaction Risk: Automation Complacency
+
+Tilbury and Flowerday [12] investigate whether SOC automation induces analyst complacency through a mixed-methods study combining four SOC site observations, a 696-analyst survey, and 29 in-depth analyst interviews. Using PLS structural equation modeling, they demonstrate that increased automation causes analysts to reduce monitoring vigilance and increase reliance on automated outputs—the *vigilance paradox*. Importantly, they find that systematic verification procedures can mitigate this effect. This finding has direct design implications: an AI SOC agent that presents opaque verdicts without traceable evidence chains not only fails to support analyst judgment but actively degrades it. The companion paper [18] provides further quantitative analysis of human-automation preference formation in SOC contexts.
+
+#### (4) Incident Response Standards
+
+NIST SP 800-61 Rev. 3 [13] (April 2025) replaces the 2012 Rev. 2 version, reorganizing incident response guidance around the six functions of the NIST Cybersecurity Framework (CSF) 2.0: Govern, Identify, Protect, Detect, Respond, and Recover. A key normative change is the explicit recommendation that incidents should be prioritized through structured triage and risk-based analysis rather than first-in-first-out queue management (outcome RS.MA-02). This standard provides the procedural framework for the proposed system's escalation and remediation suggestion components.
+
+#### (5) Analyst Triage Behavior: Empirical Evidence
+
+Alahmadi et al. [24] conduct qualitative research with 21 practitioners across seven SOCs (supplemented by a 20-respondent questionnaire), revealing that the majority of dismissed alerts are **benign positives rather than genuine false positives**: the detection fired correctly, but the flagged behavior is an authorized activity within that organization. This distinction—between FP (detector error) and BP (correct detection, benign activity)—is analytically critical but absent from most ML triage literature. Analysts also identify alert opacity—lack of explanations and contextual information—as a primary impediment to efficient triage. Kersten et al. [25] conduct two think-aloud protocol experiments observing five Tier-1 analysts performing 400 alert investigations at a commercial SOC, developing and evaluating an Alert Investigation Support System (AISS). Key findings include: investigation workflows vary substantially across analysts and alert types; and alerts that ultimately require escalation are associated with significantly greater variety in evidence types collected. This directly motivates adaptive evidence collection depth in the proposed system's LLM planning module.
+
+#### 繁體中文重點說明
+
+1. **告警疲勞**：Ndichu 等人 [8] 回顧 87 篇核心研究，指出四大缺口（營運驗證、對抗穩健性、跨環境泛化、評估一致性），提出 Cognitive SOC 研究議程；Habibzadeh 等人 [9] 整理 LLM 在 SOC 工作流程中的應用分類。
+2. **攻擊鏈階段**：Sadlek 等人 [10] 以 Kill Chain 攻擊圖判定嚴重度，AUC 0.95；ROSCA [11] 以 ATT&CK 戰術推進評分，在真實醫院 SOC 資料上優於 MATE。**核心共識**：單一告警的意義取決於在攻擊鏈中的位置。
+3. **自動化自滿**：Tilbury 與 Flowerday [12] 以 696 份問卷與 29 場訪談確認自動化讓分析師降低監控；系統性驗證程序可減緩此現象，強調 Agent 必須輸出可驗證的證據鏈。
+4. **NIST SP 800-61 Rev. 3**：2025 年 4 月更新，明確建議事件應依風險優先排序（RS.MA-02），不應先到先處理，是本專題處置建議的流程依據。
+5. **分析師行為**：Alahmadi 等人 [24] 發現大多數「誤報」實為良性觸發（BP），本專題三分類正確反映此實務；Kersten 等人 [25] 發現需升級的告警會蒐集更多種類的資訊，支持本專題依情況調整證據蒐集深度的設計。
+
+---
 
 ### 3.3 Article Summary Table
 
-| Ref. | Year | Problem | AI Method | Domain Knowledge | Dataset | Findings | Limitation |
-|---|---|---|---|---|---|---|---|
-| [1] | 2024 | SOC 事件的調查、分級、處置建議 | ML 架構（CGR），整合於 Defender XDR | SOC triage（TP/BP/FP）、處置動作 | GUIDE（1,300 萬證據、160 萬告警、100 萬事件、6.1k 組織、兩週，公開） | 已部署至數千客戶、產生數百萬筆建議；以內部資料離線評估，分級跨區域平均 macro-F1 0.87、precision 0.87、recall 0.86；在 90% precision 的門檻下，分級模型可覆蓋約 41% 的事件（GUIDE 本身未報告分級分數） | 作者自述：未與其他模型或商用產品比較；只能針對既有偵測器給建議，無法處理 zero-day 或未監控的攻擊途徑 |
-| [2] | 2025 | 告警量大、單一 LLM 雜訊下不穩且不透明 | 多 Agent LLM（行為分析、證據蒐集、推理） | SOC 調查流程、分析師逐步行動 | 自建並公開的 SOC 調查軌跡（10 餘個真實企業情境、數千筆） | 相較使用工具的單 Agent：可行動告警 F1 0.66 → 0.78，誤報率 24.9% → 14.2% | 作者自述：情境數有限；對分布偏移、prompt injection、工具回傳不完整敏感。成本：token 約 5.7 倍、每告警 152 秒（約 3.4 倍） |
-| [3] | 2026 | LLM Agent 的推理策略如何影響證據蒐集與結案時機 | 5 種 tool-using LLM 策略；提出 AIDA（多 Agent 質疑 + Judge） | 告警分級、SIEM 調查 | ALERT-BENCH：以 AIT-LDSv2 telemetry 在 SIEM 重播；1,247 筆告警，來自四天的多階段攻擊情境 | 現有方法漏判 ≥ 40.4%，且查無紀錄時最易誤判結案；AIDA F1 0.958、漏判率 3.1%，升級 18.4%；每告警約 3.4 萬 token、12.7 秒、0.109 美元（GPT-4.1） | 作者自述：資料僅來自 AIT 同一資料系列，未在獨立收集的 SOC 資料上驗證；缺乏組織脈絡（帳號角色、資產用途）時部分事件仍無法判斷；未評估分析師實際使用情形；預印本 |
-| [4] | 2026 | 缺乏評估 LLM Agent 威脅調查能力的 benchmark | LLM Agent + SQL 工具；由調查圖自動生成題目 | 資安 log、調查圖、偵測邏輯 | 單一受控 Azure 租戶（虛構公司）：57 張 log 表、8 條真實攻擊鏈、7,542 題 | 最佳模型 reward 0.606；改用完整資料庫降至 0.248；移除告警表後表現明顯下降 | 依內文整理（無獨立限制章節）：僅一個租戶，良性雜訊為模擬產生；題目由 LLM 依告警圖生成，偏重告警表 |
-| [5] | 2025 | 惡意程式分析與威脅情資推理缺乏 benchmark | LLM 評估（含推理模型） | 惡意程式分析、威脅情資 | CyberSOCEval（CyberSecEval 4 的一部分）：惡意程式分析 609 題、威脅情資推理 588 題（45 份報告） | 各模型準確率約 23–34%（惡意程式）、43–53%（威脅情資），遠未飽和；模型越大越新越好；test-time scaling 在資安的效益不如程式與數學 | 作者自述：惡意程式分析只涵蓋 Windows；皆為多選題；事件應變與分級列為未來工作，尚未涵蓋 |
-| [6] | 2025 | 從資安文字辨識 ATT&CK 技術，需大量標註 | RAG：retriever + 指令微調 LLM + 零樣本重排序 | MITRE ATT&CK 技術 | Tram、Procedures、Expert 三個 benchmark（分別涵蓋 198、488、290 種技術） | 少量標註即達 SOTA：Procedures F1 91.09%；多標籤的 Expert 僅約 50%（GPT-4o + RAG 51.30% 略高） | 作者自述：許多技術缺乏程序範例；訓練資料多為單一標籤，模型很少輸出超過兩個技術，多標籤召回率低；標準答案本身不一致。另：僅處理威脅情資文字，而非告警或 log |
-| [7] | 2026 | 事件佇列依時間或粗略嚴重度排序，優先順序不明 | 改良 BM25 的跨租戶排序 + 元件層級解釋 | SOC 佇列管理、領域先驗 | 1,000 個組織專家評估；47.3 萬個組織日佇列的上線後紀錄；GUIDE + 9,980 筆排序標籤（499 個佇列） | Precision@10 92.8%；告警細節檢視比嚴重度排序多 17.5% | 作者自述：只排序既有佇列，不判斷 TP/FP，也無法找出未成為事件的攻擊；排序品質依賴 ATT&CK 對應、威脅情資與資產標籤等 metadata 的完整性 |
-| [8] | 2026 | 告警疲勞的 AI 解法缺乏系統性整理 | 綜述：過濾、分級、關聯、生成式增強 | 告警疲勞、SOC 工作流程 | 119 筆文獻，其中 87 篇核心研究（2015–2026） | 提出四階段分類；指出營運驗證、對抗穩健性、跨環境泛化與評估方法四項缺口，並提出「Cognitive SOC」研究議程 | 作者自述：排除非英文文獻；多數研究以 CICIDS、DARPA TC 等 benchmark 評估，量化結果應視為上限；為投稿 ACM Computing Surveys 的預印本 |
-| [9] | 2025 | LLM 如何整合進 SOC 工作流程 | 綜述：LLM 用於 log 分析、告警分級、威脅情資 | SOC 的人力、告警量、回應時間問題 | 依 Kitchenham 系統性文獻回顧方法整理的文獻 | 作者自稱為第一篇全面探討 LLM 在 SOC 應用的綜述；依 SOC 工作流程分類各項應用 | 無實證結果（綜述性質）；預印本 |
-| [10] | 2025 | 多步驟攻擊的告警需依嚴重度分級 | 攻擊圖比對（MulVAL），非 LLM | Kill Chain、ATT&CK、資產重要性 | 10 台主機的測試平台，以 MITRE CALDERA 執行 5 個攻擊情境（31 種 ATT&CK 技術）；475 條告警序列中 10 條為惡意 | 告警序列分類 AUC 0.95；門檻可正確分出 80% 惡意序列 | 作者自述：測試平台規模小、無真實使用者流量；攻擊圖在大型網路有擴展性問題；MulVAL 規則需人工撰寫，維護成本高 |
-| [11] | 2025 | 告警量大造成分析師疲勞；SOC 依賴黑箱商用方案，難以理解與自行調整 | 非 ML：依共享欄位建立動態告警圖，聚合成 case，再依 ATT&CK 戰術推進評分（輕量、可解釋） | ATT&CK 戰術推進（Kill Chain） | 法國醫院 SOC：EDR 告警（2 個月、382 筆）與內部 IDS 告警（15 天、37 筆），以分析師人工標籤評估；另含滲透測試資料 | 分數比 MATE 更符合分析師標籤，分析師確認分數有用；382 筆告警的關聯只需 0.12 秒、1.45 MB | 單一醫院、告警數量少；以分數與標籤的對應圖呈現，未報告 Precision / Recall 等量化指標；只納入能確定推得戰術的告警 |
-| [12] | 2026 | SOC 自動化是否造成分析師自滿與偏誤 | 非 AI 方法：PLS 結構方程模型 | 自動化自滿與偏誤、人機信任 | 4 次 SOC 觀察、696 份問卷、29 場訪談 | 分析師降低監控、更依賴自動化；系統性驗證程序可減緩 | 僅美國分析師；自陳資料 |
-| [13] | 2025 | 事件應變指引需與 CSF 2.0 整合 | — | 事件應變生命週期（CSF 2.0 六大功能） | — | 取代 2012 年 Rev. 2；建議事件須先分級與驗證（RS.MA-02），且不應依先到先處理 | 以 CSF 成果與建議呈現的高階指引，不提供告警層級的判斷規則或門檻 |
-| [24] | 2022 | 安全工具誤報率高，但「誤報」的定義含糊 | 非 AI 方法：問卷（n = 20）＋半結構式訪談（n = 21） | 分析師如何驗證告警、誤報與 benign trigger 的區別 | 7 個 SOC 的實務人員，多數位於英國 | 多數「誤報」其實是 benign trigger，應與真正的誤報分開衡量；告警的主要問題是不可靠、無法客製、缺乏解釋與脈絡；提出 REACT 模型 | 作者自述：樣本小、僅 7 個 SOC 且多在英國與歐洲；非隨機招募；自陳資料 |
-| [25] | 2025 | Tier-1 分析師實際如何調查告警，所知甚少 | 非 AI 方法：兩次 think-aloud 實驗，並開發調查輔助系統（AISS） | Tier-1 調查流程、會蒐集哪些資訊 | 一家商業 SOC：5 名分析師 400 次調查；另 4 名分析師使用 AISS 進行 36 次調查 | 調查流程因人、因告警類型而異；需要升級的告警會蒐集更多種類的資訊；AISS 讓分析師以更少動作取得更多相關資訊 | 作者自述：僅一家 SOC，受試者多為實習的初階分析師；同一攻擊被重複調查 |
-| [26] | 2026 | LLM Agent 在真實 SOC 中是否會被採用 | LLM ReAct Agent，與分析師共同設計 | SOC 工單處理流程、分析師的信任與採用 | 一所大學 SOC 的 14 個月實地研究，最後 4 個月由分析師實際使用 | 超過 90% 的情況下輸出被用於結案報告；可驗證性是採用的關鍵；最常使用的 3 位分析師估計節省 30–50% 處理時間 | 作者自述：僅一所大學 SOC；時間比較的對照為分析師自陳的手動處理時間；預印本 |
+| Ref. | Year | Problem | AI Method | Domain Knowledge | Dataset | Key Findings | Limitation | Verified |
+|---|---|---|---|---|---|---|---|---|
+| [1] | 2024 | SOC incident investigation, triage, and remediation | ML (CGR), integrated in Defender XDR | SOC triage (TP/BP/FP), remediation actions | GUIDE: 13M evidence rows, 1.6M alerts, 1M incidents, 6.1k orgs, 2 weeks (public) | Deployed to thousands of customers; macro-F1 0.87, precision 0.87, recall 0.86; 41% incident coverage at 90% precision threshold | Authors: no comparison to other products; limited to known detectors; cannot handle zero-day or unmonitored attack vectors | Y |
+| [2] | 2025 | High alert volume; single-LLM instability and opacity under noisy enterprise data | Multi-agent LLM (behavior analysis, evidence collection, reasoning) | SOC investigation workflow, analyst step-by-step actions | Self-constructed SOC investigation traces (10+ real enterprise scenarios, thousands of records, public) | Actionable alert F1: 0.66→0.78; FP rate: 24.9%→14.2% vs. single tool-using agent | Authors: limited scenario count; sensitive to distribution shift, prompt injection, incomplete tool returns; cost: ~5.7× tokens, 152s/alert | Y |
+| [3] | 2026 | How LLM reasoning strategies affect evidence collection and case closure timing | 5 tool-using LLM strategies; proposes AIDA (multi-agent challenger + judge) | Alert triage, SIEM investigation | ALERT-BENCH: AIT-LDSv2 telemetry replayed in SIEM; 1,247 alerts from 4-day multi-stage attack scenarios | All existing strategies miss ≥40.4% attacks; AIDA F1 0.958, FNR 3.1%, escalation 18.4%; ~34k tokens, $0.109/alert (GPT-4.1) | Authors: data only from AIT series; lacks organizational context; analyst adoption not evaluated; preprint | Y |
+| [4] | 2026 | Lack of benchmark for evaluating LLM agent threat investigation | LLM Agent + SQL tools; questions auto-generated from investigation graphs | Security logs, investigation graphs, detection logic | Controlled Azure tenant: 57 log tables, 8 real attack chains, 7,542 questions | Best model reward 0.606; drops to 0.248 with full DB; alert table removal causes sharp degradation | Derived from text: single tenant; benign noise is simulated; questions LLM-generated from alert graphs, biased toward alert table | Y |
+| [5] | 2025 | Lack of benchmarks for malware analysis and threat intelligence reasoning | LLM evaluation (including reasoning models) | Malware analysis, threat intelligence | CyberSOCEval (part of CyberSecEval 4): malware 609 Qs, threat intelligence 588 Qs (45 reports) | Model accuracy 15–28% (malware), 43–53% (TI); larger/newer models better; test-time scaling less effective than in code/math | Authors: malware analysis Windows-only; multiple-choice format; IR and triage listed as future work | Y |
+| [6] | 2025 | ATT&CK technique annotation from CTI text requires large labeled datasets | RAG: retriever + instruction-tuned LLM + zero-shot reranker | MITRE ATT&CK techniques | Tram, Procedures, Expert benchmarks (198, 488, 290 techniques respectively) | SOTA with minimal labels: Procedures F1 91.09%; Expert multi-label ~50% | Authors: techniques lack procedure examples; models rarely output >2 techniques; multi-label recall low; ground truth inconsistency; CTI text only, not SOC alerts | Y |
+| [7] | 2026 | Incident queues ordered by time or coarse severity; true priority unclear | Modified BM25 cross-tenant ranking + component-level explanations | SOC queue management, domain priors | 1,000-org expert evaluation; 473k org-day queues (production); GUIDE + 9,980 priority labels (499 queues) | Precision@10 92.8%; 17.5% more alert details viewed vs. severity-ordered | Authors: only ranks existing queues; cannot classify TP/FP or surface undetected attacks; ranking depends on ATT&CK mapping, TI, and asset label completeness | Y |
+| [8] | 2026 | Lack of systematic review of AI-based alert screening | Survey: filtering, triage, correlation, generative augmentation | Alert fatigue, SOC workflow | 119 references, 87 core studies (2015–2026) | Four-stage classification; identifies 4 research gaps; proposes Cognitive SOC agenda | Authors: excludes non-English literature; most studies use benchmark datasets; preprint submitted to ACM Computing Surveys | Y |
+| [9] | 2025 | LLM integration into SOC workflows lacks systematic treatment | Survey: LLM for log analysis, alert triage, threat intelligence | SOC staffing, alert volume, response time challenges | Kitchenham systematic review methodology | Claims first comprehensive LLM-in-SOC survey; organizes by SOC workflow stage | No empirical results (survey); preprint | Y |
+| [10] | 2025 | Multi-step attack alerts need severity-based triage | Attack graph matching (MulVAL), non-LLM | Kill chain, ATT&CK, asset criticality | 10-host testbed; 5 MITRE CALDERA scenarios (31 ATT&CK techniques); 475 alert sequences, 10 malicious | Alert sequence classification AUC 0.95; threshold correctly identifies 80% malicious sequences | Authors: small testbed scale, no real user traffic; attack graph scalability issues; MulVAL rules require manual authoring | Y |
+| [11] | 2025 | High alert volume causes analyst fatigue; opaque commercial tools impede customization | Non-ML: dynamic alert graph by shared attributes, aggregated into cases, scored by ATT&CK tactic progression | ATT&CK tactic progression (kill chain) | French hospital SOC: EDR alerts (2 months, 382 records) + internal IDS (15 days, 37 records); analyst labels; penetration test data | Scores outperform MATE in matching analyst labels; 382-alert correlation in 0.12s, 1.45MB | Single hospital; small alert count; no Precision/Recall reported; only alerts with deterministic tactic inference included | Paywall-OK |
+| [12] | 2026 | Does SOC automation induce analyst complacency and bias? | Non-AI: PLS structural equation modeling | Automation complacency, human-machine trust | 4 SOC observations, 696-analyst survey, 29 interviews | Automation reduces monitoring vigilance; systematic verification procedures mitigate complacency | US analysts only; self-reported data | Paywall-OK |
+| [13] | 2025 | Incident response guidance needs integration with CSF 2.0 | — | Incident response lifecycle (CSF 2.0 six functions) | — | Replaces 2012 Rev. 2; RS.MA-02 recommends risk-based triage, not FIFO; Govern function added | High-level guidance; no alert-level decision rules or quantitative thresholds | Y |
+| [24] | 2022 | High security tool FP rates, but "false positive" is poorly defined | Non-AI: questionnaire (n=20) + semi-structured interviews (n=21) | Analyst alert verification; FP vs. benign trigger distinction | Practitioners from 7 SOCs, predominantly UK-based | Most "false positives" are benign triggers; alert opacity (no explanation/context) is a primary problem; proposes REACT model | Authors: small sample, 7 SOCs mostly UK/Europe; non-random recruitment; self-reported | Y |
+| [25] | 2025 | Little is known about how Tier-1 analysts actually investigate alerts | Non-AI: think-aloud experiments; develops AISS | Tier-1 investigation process, evidence collection patterns | Commercial SOC: 5 analysts, 400 investigations; 4 analysts using AISS for 36 investigations | Workflows vary by analyst and alert type; escalated alerts involve greater evidence type variety; AISS reduces actions needed | Authors: single SOC; subjects mostly junior/intern analysts; same attack investigated repeatedly | Y |
+| [26] | 2026 | Will LLM agents be adopted in real SOC practice? | LLM ReAct Agent, participatory design with analysts | SOC ticketing workflow, analyst trust and adoption | University SOC: 14-month field study, 4-month active use period | >90% usage rate for case closure; verifiability is key to adoption; 30–50% time savings for top-3 users | Authors: single university SOC; time comparison vs. self-reported manual baseline; preprint | Y |
+
+---
 
 ### 3.4 Research Gap
 
-**Existing Research**
-- **ML 分級**（[1]、[7]）：可大規模部署、準確，但依賴廠商內部資料，攻擊鏈脈絡沒有明確納入推理。
-- **LLM Agent**（[2]、[3]、[4]）：能調查與解釋，但漏判率高（[3] 中現有方法 ≥ 40.4%）、benchmark 分數有限（[4] 最佳 0.606）。
-- **知識整合**（[6]、[10]、[11]）：ATT&CK / Kill Chain 能有效判斷嚴重度，但多為規則或圖方法，或只處理威脅情資文字，沒有和 ML 分級、LLM 推理整合。
-- **SOC 實務與人因研究**（[12]、[24]、[25]、[26]）：自動化會讓分析師降低監控；分析師需要可解釋、有脈絡、容易驗證的輸出；需要升級的告警需要更多樣的證據。
+#### Existing Research
 
-**Limitations**
-1. ML 方法擅長「判斷像不像」，但很少說明「在攻擊鏈中代表什麼」。
-2. LLM Agent 在證據不足時容易過早結案，且單純增加推理量不會改善可靠性（[3]）。
-3. 多數系統只輸出結論，缺少「何時該交給人」的明確設計，也不容易讓分析師驗證，容易加劇自動化自滿（[12]、[26]）。
-4. 綜述 [8] 指出評估方法不一致、缺乏可重現的公開評估。
+Prior work divides into four clusters, each contributing a necessary but insufficient piece of the solution:
 
-**Research Gap**
-目前缺少一個**同時整合「真實標籤上訓練的 ML 分級」、「ATT&CK / Kill Chain 領域推理」與「LLM 證據整合」**，並以**明確的升級機制**處理不確定性與證據不足、且**在公開資料上可重現評估**的 SOC Agent。
+- **ML-based triage** ([1], [7]): Industrially deployed ML classifiers achieve strong accuracy at enterprise scale (macro-F1 0.87 for CGR [1]) and effective queue prioritization (Precision@10 92.8% for AIP [7]). However, their advantage derives from vendor-internal cross-customer data and product integration context. Critically, these models optimize for statistical similarity to historical TP patterns without explicitly encoding kill chain semantics or providing analyst-interpretable evidence chains.
 
-**Our Project**
-本專題提出 AI SOC Analyst Agent：
-- 以 GUIDE 訓練 ML 分級模型，負責大量、穩定的機率判斷，不讓分級只依賴 LLM（回應 Limitation 2）。
-- 以 ATT&CK 知識庫與 Kill Chain 規則提供領域推理，越後段的攻擊鏈階段越傾向升級（回應 Limitation 1）。
-- 以證據融合與衝突偵測決定是否交給人工，並把「TP 漏判率」與「升級率」同時列為指標，明確呈現兩者的取捨（回應 Limitation 2、3）。
-- 每個結論都附上證據鏈與資料來源，讓分析師容易驗證，而不是只能照單全收（回應 Limitation 3）。
-- 以 GUIDE 和 ExCyTIn-Bench 兩個公開資料集評估，確保可重現（回應 Limitation 4）。
+- **LLM Agent investigation** ([2], [3], [4]): LLM agents offer flexible, query-driven investigation but exhibit severe reliability limitations. All mainstream reasoning strategies miss at least 40.4% of attack-related alerts [3], and the best-performing model on the ExCyTIn-Bench threat investigation benchmark achieves an investigation reward of only 0.606 [4]. The fundamental failure mode—premature case closure when queries return empty results—reveals that LLM agents conflate absence of evidence with evidence of absence.
+
+- **Domain knowledge integration** ([6], [10], [11]): ATT&CK-based methods demonstrably improve severity assessment by contextualizing alerts within kill chain progression, with alert sequence classification AUC reaching 0.95 [10]. RAG-based ATT&CK annotation achieves F1 91.09% on CTI text [6]. Yet these methods operate as isolated systems—ATT&CK reasoning is not integrated with ML probability estimation or LLM evidence collection.
+
+- **SOC human factors and practice** ([12], [24], [25], [26]): Empirical research consistently establishes that (a) automation complacency degrades analyst vigilance [12]; (b) output verifiability—not accuracy—determines analyst adoption [26]; (c) the TP/BP/FP distinction is essential but conflated in practice [24]; and (d) escalated cases require richer, more varied evidence collection [25]. These findings establish clear requirements for human-centered agent design that the technical ML and LLM literature largely neglects.
+
+#### Limitations of Current Approaches
+
+1. ML classifiers are strong at pattern recognition but do not explain *what an alert means within the attack chain*—the information analysts most need for severity judgment.
+2. LLM agents terminate investigations prematurely under incomplete evidence, and simply increasing inference compute does not improve reliability [3][5].
+3. Most systems produce opaque verdicts without explicit escalation policies, lack the evidence chains analysts need to independently verify outputs, and consequently risk exacerbating automation complacency [12][26].
+4. Systematic reviews identify evaluation methodology inconsistency and absence of reproducible public benchmarking as a persistent gap [8].
+
+#### Research Gap
+
+The field currently lacks a system that **simultaneously** integrates: (a) ML triage trained on real analyst-labeled data; (b) ATT&CK and kill chain domain reasoning as explicit constraints; (c) LLM-based multi-step evidence collection with a principled termination and escalation policy; and (d) full evidence-chain explainability to support analyst verification—while providing reproducible evaluation on public datasets.
+
+#### Our Project
+
+The proposed AI SOC Analyst Agent is designed to close this gap through five complementary mechanisms:
+
+1. **ML triage on real labels**: GBDT trained on the GUIDE dataset provides stable, calibrated TP/BP/FP probability estimates at scale, eliminating dependence on LLM judgment for the base classification decision (addresses Limitation 1).
+2. **Explicit kill chain reasoning**: ATT&CK knowledge retrieval and five programmatic kill chain rules (R1–R5) provide domain-grounded severity constraints; later-stage attack tactics systematically increase escalation priority (addresses Limitation 1).
+3. **Principled evidence collection and escalation**: The LLM planning module follows an Assume Breach protocol—empty query results trigger expanded investigation rather than case closure. An explicit escalation policy (Algorithm 2) defines four auditable conditions for human handover: low confidence, ML/LLM conflict, kill chain rule trigger, or evidence budget exhaustion without resolution (addresses Limitation 2 and 3).
+4. **Full evidence-chain explainability**: Every verdict includes SHAP feature attributions, similar historical incidents, mapped ATT&CK techniques, and data source citations—enabling analysts to verify rather than accept outputs on faith (addresses Limitation 3).
+5. **Reproducible dual-dataset evaluation**: Primary evaluation on GUIDE (triage accuracy, 1M incidents) and ExCyTIn-Bench (agentic log investigation) with organizational-boundary data splits (GroupKFold) prevents data leakage and enables reproducible comparison (addresses Limitation 4).
+
+#### 繁體中文重點說明
+
+- **ML 分級的不足**：準確率高但缺少攻擊鏈脈絡，依賴廠商私有資料，無法提供可驗證的證據鏈。
+- **LLM Agent 的不足**：漏判率高（≥40.4% [3]），Benchmark 分數有限（0.606 [4]），增加推理量無法改善可靠性。
+- **知識整合的缺口**：ATT&CK / Kill Chain 方法有效但與 ML/LLM 孤立。
+- **人因研究的啟示**：自動化自滿 [12]、可驗證性是採用關鍵 [26]、BP≠FP 的區分 [24]、升級告警需更多證據 [25]——這些實務發現在技術論文中多被忽略。
+- **Research Gap**：目前沒有系統同時整合「真實標籤 ML 分級」+「ATT&CK 領域推理」+「有升級機制的 LLM 證據收集」+「可驗證的證據鏈」且在公開資料上可重現評估。
+- **本專題回應**：五個互補機制（ML 訓練於 GUIDE、Kill Chain 規則 R1–R5、Assume Breach 升級協定、完整證據鏈、GroupKFold 雙資料集評估）直接對應四個限制。
 
 ## 4. Deep Research
 
