@@ -44,12 +44,25 @@
    - **10 大深度問題（Questions）**：深入分析以 incident 為單位的理由、非對稱成本量化、測試時推理 Scaling 限制、日誌中斷處理等專業議題。詳見 [`docs/DEEP_RESEARCH.md`](docs/DEEP_RESEARCH.md)。
 3. **OpenSpec 規格驅動開發藍圖**：
    - 將系統完整映射為 5 大核心 Capabilities、15 條 RFC 2119 規範與 15 組可驗證驗收情境。詳見 [`docs/OPEN_SPEC_GUIDE.md`](docs/OPEN_SPEC_GUIDE.md)。
+4. **A–Z SOP 26 字母深度解析與 A4 橫式高密度資訊圖表**：
+   - **A–Z 26 字母深度解析**：依照教育部/授課教師《期末專題提案作業規範》與《2020 A-Z SOP Outline》，將本專案進行 26 字母完整對照映射。詳見 [`docs/NBLM_A2Z_ANALYSIS.md`](docs/NBLM_A2Z_ANALYSIS.md)。
+   - **A4 橫式高密度 NUMBERING 資訊圖表**：以全景階層式編號整合核心數據、雙公開資料集、八大模組、16 篇 Verified 文獻、五大思維與雙演算法。詳見圖檔 [`docs/infographic_a4_landscape.png`](docs/infographic_a4_landscape.png)、HTML [`docs/infographic_a4_landscape.html`](docs/infographic_a4_landscape.html) 與 Markdown [`docs/INFOGRAPHIC_A4_LANDSCAPE.md`](docs/INFOGRAPHIC_A4_LANDSCAPE.md)。
 
 ---
 
 ## 四、系統核心架構與 OpenSpec 規格對應
 
 Agent 針對資安事件提供 **TP（True Positive） / BP（Benign Positive） / FP（False Positive）** 三級分級、ATT&CK 攻擊鏈對應與處置建議，每個結論皆附有可驗證的證據鏈；當信心度不足、結論衝突、高風險或證據不足時，主動交由分析師複核（Human-in-the-loop）。
+
+### 系統總覽資訊圖表（A4 橫式高密度 NUMBERING 資訊圖表）
+
+![AI SOC Analyst Agent 系統總覽資訊圖表](docs/infographic_a4_landscape.png)
+
+> **圖表檔案直達**：
+> - 🖼️ **高解析度圖檔**：[`docs/infographic_a4_landscape.png`](docs/infographic_a4_landscape.png)
+> - 🌐 **互動與列印 HTML 儀表板**：[`docs/infographic_a4_landscape.html`](docs/infographic_a4_landscape.html)（瀏覽器開啟按 `Ctrl + P` 可直接匯出 A4 橫式 PDF）
+> - 📄 **文字版 ASCII 儀表板**：[`docs/INFOGRAPHIC_A4_LANDSCAPE.md`](docs/INFOGRAPHIC_A4_LANDSCAPE.md)
+> - 📑 **NotebookLM 規格與 A–Z 26 字母深度解析**：[`docs/NBLM_A2Z_ANALYSIS.md`](docs/NBLM_A2Z_ANALYSIS.md)
 
 ### 八大核心模組架構
 
@@ -87,6 +100,7 @@ DIC3-AI-SOC-Agent/
 │   ├── NBLM_A2Z_ANALYSIS.md      # NotebookLM 規範與 A–Z SOP 26 字母深度解析報告
 │   ├── INFOGRAPHIC_A4_LANDSCAPE.md # A4 橫式高密度 NUMBERING 資訊圖表（Markdown 版）
 │   ├── infographic_a4_landscape.html # A4 橫式高密度 NUMBERING 資訊圖表（可列印 HTML 版）
+│   ├── infographic_a4_landscape.png  # A4 橫式高密度 NUMBERING 資訊圖表（高清圖檔）
 │   ├── OPEN_SPEC_GUIDE.md        # OpenSpec 與規格驅動開發完整指南
 │   ├── ABSTRACT_REFACTOR.md      # Abstract A–F 結構重構紀錄與診斷
 │   ├── INTRODUCTION_REFACTOR.md  # Introduction 重構紀錄、創新對比與貢獻
