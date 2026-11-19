@@ -68,7 +68,11 @@
   - 採用完整的辯證骨架：正反論點 ↔ 實證依據 ↔ 業界共識 ↔ 未解挑戰 ↔ 本專案設計決策。
 - [x] **十大深度理解問題（Ten Deep-Understanding Questions）**：
   - 深入解答包含「為何以 incident 而非單一 alert 為處理單位」、「為何單純擴大 test-time compute 無法解決資安推理」、「日誌中斷時如何避免偽陽性/偽陰性結案」等十項關鍵專業難題。
-  - 佐證檔案：[`docs/DEEP_RESEARCH.md`](DEEP_RESEARCH.md)、[`docs/proposal.md`](proposal.md#4-deep-research)。
+  - 佐證檔案：[`docs/DEEP_RESEARCH.md`](DEEP_RESEARCH.md)、[`docs/proposal.md`](proposal.md#4-deep-research)、[`docs/NBLM_A2Z_ANALYSIS.md`](NBLM_A2Z_ANALYSIS.md)。
+- [x] **A–Z SOP 26 字母深度解析與 A4 橫式高密度資訊圖表**：
+  - 依照《A2Z outline example.pdf》與《期末專題提案作業規範.pdf》，完成 A–Z 26 字母深度映射解析報告。
+  - 製作包含全景編號之 A4 橫式高密度資訊圖表（Markdown 與可列印 HTML 版）。
+  - 佐證檔案：[`docs/NBLM_A2Z_ANALYSIS.md`](NBLM_A2Z_ANALYSIS.md)、[`docs/INFOGRAPHIC_A4_LANDSCAPE.md`](INFOGRAPHIC_A4_LANDSCAPE.md)、[`docs/infographic_a4_landscape.html`](infographic_a4_landscape.html)。
 
 ---
 

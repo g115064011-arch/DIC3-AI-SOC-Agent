@@ -84,6 +84,9 @@ DIC3-AI-SOC-Agent/
 ├── docs/
 │   ├── proposal.md               # 唯一正式學術提案版本（§1–§6 完整內容）
 │   ├── DIC3_CHECKLIST.md         # DIC3 作業檢核表（對照老師五項要求）
+│   ├── NBLM_A2Z_ANALYSIS.md      # NotebookLM 規範與 A–Z SOP 26 字母深度解析報告
+│   ├── INFOGRAPHIC_A4_LANDSCAPE.md # A4 橫式高密度 NUMBERING 資訊圖表（Markdown 版）
+│   ├── infographic_a4_landscape.html # A4 橫式高密度 NUMBERING 資訊圖表（可列印 HTML 版）
 │   ├── OPEN_SPEC_GUIDE.md        # OpenSpec 與規格驅動開發完整指南
 │   ├── ABSTRACT_REFACTOR.md      # Abstract A–F 結構重構紀錄與診斷
 │   ├── INTRODUCTION_REFACTOR.md  # Introduction 重構紀錄、創新對比與貢獻

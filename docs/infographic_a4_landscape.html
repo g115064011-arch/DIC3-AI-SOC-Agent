@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>AI SOC Analyst Agent — A4 橫式高密度資訊圖表 (Numbered Infographic)</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 6mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+      font-size: 8.2pt;
+      line-height: 1.25;
+      color: #1a202c;
+      background: #f7fafc;
+      padding: 6mm;
+    }
+    .sheet {
+      width: 285mm;
+      height: 198mm;
+      max-height: 198mm;
+      background: #ffffff;
+      border: 1px solid #cbd5e0;
+      padding: 5mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      margin: 0 auto;
+    }
+    header {
+      border-bottom: 2px solid #2b6cb0;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .title-group h1 {
+      font-size: 13.5pt;
+      font-weight: 800;
+      color: #1a365d;
+      letter-spacing: -0.2px;
+    }
+    .title-group p {
+      font-size: 7.8pt;
+      color: #4a5568;
+      font-weight: 500;
+    }
+    .meta-badges {
+      display: flex;
+      gap: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-blue { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+    .badge-green { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
+    .badge-purple { background: #faf5ff; color: #6b46c1; border: 1px solid #e9d8fd; }
+    .badge-red { background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; }
+
+    .grid-3col {
+      display: grid;
+      grid-template-columns: 0.95fr 1.1fr 0.95fr;
+      gap: 5px;
+      margin-bottom: 4px;
+    }
+    .card {
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      background: #ffffff;
+      padding: 4px 5px;
+    }
+    .card-header {
+      background: #edf2f7;
+      margin: -4px -5px 4px -5px;
+      padding: 2px 5px;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #2d3748;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .num-tag {
+      background: #2b6cb0;
+      color: #ffffff;
+      padding: 0 4px;
+      border-radius: 2px;
+      font-size: 6.8pt;
+      font-weight: 700;
+    }
+
+    /* Architecture Block */
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 7.2pt;
+    }
+    .arch-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .arch-box {
+      flex: 1;
+      padding: 2px 4px;
+      border-radius: 3px;
+      border: 1px solid #cbd5e0;
+      background: #f7fafc;
+      font-weight: 600;
+    }
+    .arch-box.highlight {
+      background: #ebf8ff;
+      border-color: #90cdf4;
+      color: #2c5282;
+    }
+    .arch-arrow {
+      color: #a0aec0;
+      font-weight: 900;
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 6.8pt;
+    }
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 1.5px 3px;
+      text-align: left;
+    }
+    th {
+      background: #edf2f7;
+      font-weight: 700;
+      color: #2d3748;
+    }
+    tr:nth-child(even) { background: #f7fafc; }
+    .verified-ok { color: #276749; font-weight: 700; }
+
+    /* Lists */
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      margin-bottom: 1.5px;
+      font-size: 7.2pt;
+    }
+    li strong {
+      color: #2b6cb0;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 2px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 6.5pt;
+      color: #718096;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        background: none;
+      }
+      .sheet {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sheet">
+  <!-- Header -->
+  <header>
+    <div class="title-group">
+      <h1>AI SOC Analyst Agent: 規格驅動開發與領域推理架構總覽</h1>
+      <p>Spec-Driven Development (OpenSpec) + GBDT Triage + TreeSHAP + MITRE ATT&CK + ReAct Evidence Gathering</p>
+    </div>
+    <div class="meta-badges">
+      <span class="badge badge-blue">DIC3 Proposal Refactor</span>
+      <span class="badge badge-green">16 Verified References</span>
+      <span class="badge badge-purple">GUIDE (1M Incidents)</span>
+      <span class="badge badge-red">RFC 2119 Validated</span>
+    </div>
+  </header>
+
+  <!-- Top 3 Columns -->
+  <div class="grid-3col">
+    <!-- Col 1: Motivation & Datasets -->
+    <div class="card">
+      <div class="card-header">
+        <span>[SEC 1] 核心問題、數據脈絡與五大思維</span>
+        <span class="num-tag">1.0</span>
+      </div>
+      <ul>
+        <li><strong>[1.1 實務數據]</strong> 國安局 2026: 每日 263 萬次外部侵擾嘗試；IBM 2026: 平均外洩 499 萬美元；Mandiant: 潛伏期 14~122 天。</li>
+        <li><strong>[1.2 告警危機]</strong> 分析師面臨告警疲勞；主流 LLM 在查無紀錄時過早結案，漏判率達 40.4% (AIDA [3])；自動化自滿 [12]。</li>
+        <li><strong>[1.3 雙公開資料集]</strong>
+          <br>• <strong>Microsoft GUIDE:</strong> 1,300 萬證據列 / 100 萬事件 / 6,100 組織 / 真實 TP, BP, FP 標籤 (90%+ 關閉為 BP 而非 FP [24])。
+          <br>• <strong>ExCyTIn-Bench (ICML):</strong> 57 張 log 表 / 8 條真實攻擊鏈 / 7,542 題調查問答 (當前最佳 reward 僅 0.606)。
+        </li>
+        <li><strong>[1.4 五大資安思維 (M1–M5)]</strong>
+          <br>• <strong>[M1] Assume Breach:</strong> 查無紀錄 ≠ 無害 (防範 T1070 竄改)。
+          <br>• <strong>[M2] Context-Aware:</strong> 單一告警取決於攻擊鏈時序位置。
+          <br>• <strong>[M3] Asymmetric Cost:</strong> 漏報代價遠高於誤報，安全覆寫優先。
+          <br>• <strong>[M4] Pyramid of Pain:</strong> 鎖定 TTPs 而非易變的 Hash/IP。
+          <br>• <strong>[M5] Human-in-the-Loop:</strong> AI 作為副駕駛，主動呈請裁決。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Col 2: 8-Module Architecture & Algorithm -->
+    <div class="card">
+      <div class="card-header">
+        <span>[SEC 2] 八大模組推理流水線與雙演算法</span>
+        <span class="num-tag">2.0</span>
+      </div>
+      <div class="arch-flow">
+        <div class="arch-row">
+          <div class="arch-box">[01] 分析師 / SIEM 告警佇列</div>
+          <span class="arch-arrow">&rarr;</span>
+          <div class="arch-box">[02] 輸入正規化 (TriageRequest)</div>
+        </div>
+        <div class="arch-row">
+          <span class="arch-arrow">&darr;</span>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box highlight" style="flex: 2;">[03] ReAct 規劃與推理代理人 (Planner)</div>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box">[04] 證據取得 (DuckDB SQL)</div>
+          <div class="arch-box">[05] 分析引擎 (GBDT+TreeSHAP)</div>
+          <div class="arch-box">[06] 領域知識 (ATT&CK+NIST)</div>
+        </div>
+        <div class="arch-row">
+          <span class="arch-arrow">&darr;</span>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box highlight" style="flex: 1.5;">[07] 決策融合與安全升級 (Algorithm 2)</div>
+          <span class="arch-arrow">&rarr;</span>
+          <div class="arch-box" style="flex: 1;">[08] 審核報告與 UI</div>
+        </div>
+      </div>
+      <div style="margin-top: 3px; font-size: 6.9pt; background: #f8fafc; padding: 2px 4px; border-radius: 3px; border: 1px dashed #cbd5e0;">
+        <strong>[2.1 決策公式]</strong> $s = w_{ml} \cdot P_{ml}(TP) + w_{llm} \cdot Q_{llm}(TP)$<br>
+        <strong>[2.2 安全覆寫]</strong> IF ($R_1..R_5$ 觸發) 且 ($P_{ml} \ge \tau_{safety}$) THEN Verdict = True Positive<br>
+        <strong>[2.3 局部特徵歸因]</strong> TreeSHAP $\phi_i = \sum_{S \subseteq F\setminus\{i\}} \frac{|S|!(|F|-|S|-1)!}{|F|!} [f(S \cup \{i\}) - f(S)]$
+      </div>
+    </div>
+
+    <!-- Col 3: Rules & Escalation Policy -->
+    <div class="card">
+      <div class="card-header">
+        <span>[SEC 3] 攻擊鏈規則 (R1-R5) 與升級協定</span>
+        <span class="num-tag">3.0</span>
+      </div>
+      <ul>
+        <li><strong>[3.1 攻擊鏈高風險硬約束 (R1–R5)]</strong>
+          <br>• <strong>[R1 終端衝擊]:</strong> Exfiltration (外洩) / Impact (破壞) &rarr; 強制高風險。
+          <br>• <strong>[R2 憑證擴散]:</strong> Credential Access + Lateral Move &rarr; 優先升級。
+          <br>• <strong>[R3 入侵常駐]:</strong> Initial Access + Persistence &rarr; 關聯攻擊標記。
+          <br>• <strong>[R4 抹除紀錄]:</strong> Indicator Removal (T1070) &rarr; 防禦規避標記。
+          <br>• <strong>[R5 多階段鏈]:</strong> 涵蓋 $\ge 3$ 個不同戰術階段 &rarr; 威脅層級提高。
+        </li>
+        <li><strong>[3.2 四大人工作業升級邊界 (Algorithm 2)]</strong>
+          <br>符合以下任一條件，系統強制將狀態標記為 <code>NEEDS_HUMAN_REVIEW</code>：
+          <br>1. <strong>[低信心度]:</strong> 綜合判定信心度 $< \tau$（預設 0.80）。
+          <br>2. <strong>[結論衝突]:</strong> ML 預測與 LLM 推理方向相反 ($\text{Argmax } p \ne \text{Argmax } q$)。
+          <br>3. <strong>[後段攻擊]:</strong> 命中 R1–R5 高風險規則之一。
+          <br>4. <strong>[證據不足]:</strong> 工具呼叫耗盡預算上限 $B$ 且不確定性未消除。
+        </li>
+        <li><strong>[3.3 三大專業爭論 (C1–C3)]</strong>
+          <br>• <strong>[C1]:</strong> ML 穩定吞吐 vs LLM 脈絡推理 (本案: 融合互補)。
+          <br>• <strong>[C2]:</strong> 自動化自滿 vs 人類監督 (本案: 輸出可驗證證據鏈)。
+          <br>• <strong>[C3]:</strong> Benchmark 偏差 vs 真實遙測 (本案: 雙公開集 GroupKFold)。
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Middle: Full Table of 16 Verified References -->
+  <div class="card" style="margin-bottom: 4px;">
+    <div class="card-header">
+      <span>[SEC 4] 全文 16 篇實測已驗證文獻摘要矩陣 (AI Technology 50% : Domain Know-How 50%)</span>
+      <span class="num-tag">4.0</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 32px;">Ref.</th>
+          <th style="width: 28px;">Year</th>
+          <th style="width: 90px;">領域分類</th>
+          <th style="width: 130px;">核心方法 / 技術</th>
+          <th style="width: 155px;">資料集 / 實證規模</th>
+          <th>主要量化研究成果與核心發現</th>
+          <th style="width: 48px;">Verified</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>[1]</td><td>2024</td><td>AI: 機器學習分級</td><td>GBDT (CGR), Defender XDR</td><td>GUIDE (13M 證據, 1M 事件, 6.1k 組織)</td><td>已部署數千企業；離線 Macro-F1 0.87、Prec 0.87、Rec 0.86；覆蓋 41% 事件</td><td class="verified-ok">Y (arXiv)</td>
+        </tr>
+        <tr>
+          <td>[2]</td><td>2025</td><td>AI: 多 Agent 調查</td><td>多 Agent LLM (CORTEX)</td><td>自建真實企業軌跡 (10+ 情境, 數千筆)</td><td>可行動 F1 0.66 &rarr; 0.78，誤報率 24.9% &rarr; 14.2%；耗損 5.7x token、152s/告警</td><td class="verified-ok">Y (arXiv)</td>
+        </tr>
+        <tr>
+          <td>[3]</td><td>2026</td><td>AI: 推理與升級</td><td>AIDA (質疑 + 裁判機制)</td><td>ALERT-BENCH (1,247 攻擊告警, SIEM)</td><td>主流方法漏判 &ge; 40.4%；AIDA F1 0.958、漏判 3.1%、升級 18.4%、$0.109/告警</td><td class="verified-ok">Y (arXiv)</td>
+        </tr>
+        <tr>
+          <td>[4]</td><td>2026</td><td>AI: 威脅調查基準</td><td>LLM Agent + SQL 工具</td><td>Azure 租戶 (57 log 表, 8 攻擊鏈, 7,542 題)</td><td>最佳模型 reward 僅 0.606；切換至完整 DB 降至 0.248；極度仰賴告警表</td><td class="verified-ok">Y (ICML)</td>
+        </tr>
+        <tr>
+          <td>[5]</td><td>2025</td><td>AI: 資安推理評測</td><td>CyberSOCEval (CyberSecEval4)</td><td>惡意程式 (609 題), 威脅情資 (588 題/45 報告)</td><td>惡意程式準確率 15–28%，情資 43–53%；推理模型 test-time scaling 效益不明顯</td><td class="verified-ok">Y (arXiv)</td>
+        </tr>
+        <tr>
+          <td>[6]</td><td>2025</td><td>AI: 領域 RAG 檢索</td><td>TechniqueRAG (ACL Findings)</td><td>Tram (198), Procedures (488), Expert (290)</td><td>少量標註達 SOTA: Procedures F1 91.09%；多標籤 Expert 僅 ~50% (51.30%)</td><td class="verified-ok">Y (ACL)</td>
+        </tr>
+        <tr>
+          <td>[7]</td><td>2026</td><td>AI: 佇列優先排序</td><td>改良 BM25 跨租戶排序 (AIP)</td><td>1,000 組織專家評估, 473k 佇列, GUIDE+9.9k</td><td>Precision@10 達 92.8%；告警檢視事件提升 17.5%；大幅優化 SOC 佇列負載</td><td class="verified-ok">Y (arXiv)</td>
+        </tr>
+        <tr>
+          <td>[26]</td><td>2026</td><td>AI: 實地部署研究</td><td>LLM ReAct Agent 協同設計</td><td>大學 SOC (14 個月實地研究, 4 個月主動使用)</td><td>&gt;90% 結案引用 AI 輸出；前三大用戶省時 30–50%；可驗證性是採納之核心決定因子</td><td class="verified-ok">Y (arXiv)</td>
+        </tr>
+        <tr>
+          <td>[8]</td><td>2026</td><td>Domain: 告警疲勞綜述</td><td>Cognitive SOC 四階段模型</td><td>119 篇文獻, 87 篇核心研究 (2015–2026)</td><td>指出營運驗證、對抗穩健性、跨環境泛化與評估一致性四大長期缺口</td><td class="verified-ok">Y (Survey)</td>
+        </tr>
+        <tr>
+          <td>[9]</td><td>2025</td><td>Domain: LLM SOC 應用</td><td>Kitchenham 系統性回顧</td><td>SOC 日誌、分級、情資三大流程</td><td>首篇全面探討 LLM 整合之綜述，歸納人機協作之落地瓶頸</td><td class="verified-ok">Y (Survey)</td>
+        </tr>
+        <tr>
+          <td>[10]</td><td>2025</td><td>Domain: 攻擊鏈圖判定</td><td>MulVAL 攻擊圖 + CALDERA</td><td>10 台主機, 5 情境, 31 技術, 475 告警序列</td><td>告警序列分類 AUC 達 0.95；門檻正確識別 80% 惡意序列；驗證攻擊鏈位置之重要性</td><td class="verified-ok">Y (JISA)</td>
+        </tr>
+        <tr>
+          <td>[11]</td><td>2025</td><td>Domain: ATT&CK 關聯</td><td>ROSCA 動態屬性告警圖</td><td>醫院 SOC (382 EDR, 37 IDS), 滲透測試資料</td><td>382 筆告警關聯僅 0.12s (1.45MB)；戰術推進分數高度吻合分析師標籤 (優於 MATE)</td><td class="verified-ok">Paywall-OK</td>
+        </tr>
+        <tr>
+          <td>[12]</td><td>2026</td><td>Domain: 自動化自滿</td><td>PLS 結構方程模型 (SEM)</td><td>4 次實地觀察, 696 分析師問卷, 29 場訪談</td><td>自動化顯著降低分析師警戒心 (警戒悖論)；系統性驗證程序可有效減緩</td><td class="verified-ok">Paywall-OK</td>
+        </tr>
+        <tr>
+          <td>[13]</td><td>2025</td><td>Domain: 應變標準規範</td><td>NIST SP 800-61 Rev. 3</td><td>CSF 2.0 社群設定檔 (六大核心功能)</td><td>取代 2012 版；RS.MA-02 明確建議基於風險結構化分級，廢除先進先出 (FIFO) 佇列</td><td class="verified-ok">Y (NIST)</td>
+        </tr>
+        <tr>
+          <td>[24]</td><td>2022</td><td>Domain: 分析師分級實務</td><td>質性訪談 + 問卷 (REACT)</td><td>7 個 SOC, 21 名從業人員, 20 份問卷</td><td>90%+ 被棄告警為良性觸發 (BP) 而非假警報 (FP)；缺乏脈絡解釋為核心痛點</td><td class="verified-ok">Y (USENIX)</td>
+        </tr>
+        <tr>
+          <td>[25]</td><td>2025</td><td>Domain: Tier-1 調查行為</td><td>放聲思考實驗 + AISS 系統</td><td>商業 SOC (5 名分析師, 400 次調查)</td><td>調查流程因人而異；需升級之案件顯著蒐集更多元證據；支持自適應調查深度</td><td class="verified-ok">Y (USEC)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bottom 3 Columns -->
+  <div class="grid-3col">
+    <!-- Col 1: OpenSpec SDD -->
+    <div class="card">
+      <div class="card-header">
+        <span>[SEC 5] 規格驅動開發 (OpenSpec SDD)</span>
+        <span class="num-tag">5.0</span>
+      </div>
+      <ul>
+        <li><strong>[5.1 Capabilities 矩陣 (RFC 2119)]</strong>
+          <br>• <code>incident-triage</code>: 結構化資料校驗、三類機率預測。
+          <br>• <code>evidence-retrieval</code>: 唯讀 SQL 檢索、日誌中斷檢驗。
+          <br>• <code>domain-knowledge-reasoning</code>: ATT&CK 與 R1-R5。
+          <br>• <code>risk-escalation</code>: 雙演算法融合、四條件人工作業升級。
+          <br>• <code>explainability-reporting</code>: TreeSHAP 特徵歸因與報告。
+        </li>
+        <li><strong>[5.2 拒絕虛假實作原則]</strong>
+          <br>• Active Change: <code>refactor-ai-soc-agent-proposal</code>。
+          <br>• Strict 校驗: 語意與情境 100% 通過 (Valid)。
+          <br>• <strong>生命週期管制:</strong> 提案階段暫不 archive，程式碼完成始歸檔。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Col 2: Experimental Evaluation -->
+    <div class="card">
+      <div class="card-header">
+        <span>[SEC 6] 實驗評測規劃與防外洩策略</span>
+        <span class="num-tag">6.0</span>
+      </div>
+      <ul>
+        <li><strong>[6.1 五大評測維度 (E1–E5)]</strong>
+          <br>• <strong>E1 分級基準:</strong> 對比 Majority, Heuristic, 純 GBDT, 純 LLM。
+          <br>• <strong>E2 升級取捨:</strong> 掃描門檻 $\tau$，繪製 Miss Rate vs 升級率曲線。
+          <br>• <strong>E3 調查忠實:</strong> ExCyTIn-Bench 多跳證據查核正確性。
+          <br>• <strong>E4 報告品質:</strong> 抽樣 50 起事件，專家 + LLM-as-judge 評分。
+          <br>• <strong>E5 營運成本:</strong> Token/告警 (目標 < 15k)、處理延遲 (< 30s)。
+        </li>
+        <li><strong>[6.2 GroupKFold 防外洩]</strong>
+          <br>依 <code>OrgId</code> 與 <code>IncidentId</code> 切分，保證跨租戶泛化能力。
+        </li>
+        <li><strong>[6.3 已完成 E0 剖析]</strong> 707,108 事件 / 5,769 組織 / 9,516,837 證據。</li>
+      </ul>
+    </div>
+
+    <!-- Col 3: Deliverables & Team -->
+    <div class="card">
+      <div class="card-header">
+        <span>[SEC 7] 專案工件、版本控管與交接</span>
+        <span class="num-tag">7.0</span>
+      </div>
+      <ul>
+        <li><strong>[7.1 核心交付檔案]</strong>
+          <br>• <a href="proposal.md">docs/proposal.md</a>: 唯一正式提案版本 (英主文+繁中摘要)。
+          <br>• <a href="../DESIGN.md">DESIGN.md</a>: 八大模組架構藍圖與虛擬碼。
+          <br>• <a href="DIC3_CHECKLIST.md">docs/DIC3_CHECKLIST.md</a>: 教師要求檢核表。
+          <br>• <a href="NBLM_A2Z_ANALYSIS.md">docs/NBLM_A2Z_ANALYSIS.md</a>: A-Z SOP 26 字母對齊。
+          <br>• <a href="../openspec/">openspec/</a>: 5 大能力規格庫。
+        </li>
+        <li><strong>[7.2 版本控管與開源]</strong>
+          <br>• 分支: <code>dic3-refactor</code> (已 fast-forward 合併至 <code>main</code>)。
+          <br>• 原案致謝: 期末專案第 16 組 (蘇恩平、周妤、袁靖淇、蕭宥瑄)。
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <span>AI SOC Analyst Agent — DIC3 Proposal Refactor (2026) | National Chung Hsing University</span>
+    <span>Based on Microsoft GUIDE (1M Incidents) & ExCyTIn-Bench | MITRE ATT&CK STIX 2.1 | NIST SP 800-61r3</span>
+    <span>Format: A4 Landscape High-Density Numbered Infographic (Printable via Browser Ctrl+P)</span>
+  </footer>
+</div>
+
+</body>
+</html>
